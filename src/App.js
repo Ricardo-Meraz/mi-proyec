@@ -1,25 +1,32 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Header from "./components/Header/Header";
+import Footer from "./components/Foother/Foother";
+import ProductList from "./components/cartproductos/productoslist";
+import Login from "./screens/Login/login"; 
+import QuienesSomos from "./screens/AcercaDe/quienes-somos";
+import Contacto from "./screens/Contacto/Contactos";
+import Registro from "./screens/Registro/Registro";
+import PreguntasFrecuentes from "./screens/PreguntasFrecuentes/PreguntasFrecuentes";
+import Politicas from "./screens/Politicas/Politicas";
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Header />
+      <Routes>
+        <Route path="/" element={<ProductList />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/quienes-somos" element={<QuienesSomos />} />
+        <Route path="/Contactos" element={<Contacto />} />
+        <Route path="/Registro" element={<Registro />} />
+        <Route path="/preguntas-frecuentes" element={<PreguntasFrecuentes />} />
+        <Route path="/politicas" element={<Politicas />} />
+      </Routes>
+      <Footer />
+    </Router>
   );
-}
+};
 
 export default App;
