@@ -18,29 +18,6 @@ const Menu = ({ isOpen, onClose }) => {
                         </Nav.Link>
                     </ListGroup.Item>
                     
-                    <ListGroup.Item className="bg-warning border-0">
-                        <Nav.Link as={Link} to="/cuenta" className="d-flex align-items-center gap-3 text-dark fw-bold fs-5">
-                            <FaKey /> Mi Cuenta
-                        </Nav.Link>
-                    </ListGroup.Item>
-
-                    <ListGroup.Item className="bg-warning border-0">
-                        <Nav.Link as={Link} to="/subscripciones" className="d-flex align-items-center gap-3 text-dark fw-bold fs-5">
-                            <FaList /> Mis Subscripciones
-                        </Nav.Link>
-                    </ListGroup.Item>
-
-                    <ListGroup.Item className="bg-warning border-0">
-                        <Nav.Link as={Link} to="/opciones" className="d-flex align-items-center gap-3 text-dark fw-bold fs-5">
-                            <FaTools /> Opciones
-                        </Nav.Link>
-                    </ListGroup.Item>
-
-                    <ListGroup.Item className="bg-warning border-0">
-                        <Nav.Link as={Link} to="/notificaciones" className="d-flex align-items-center gap-3 text-dark fw-bold fs-5">
-                            <FaBell /> Notificaciones
-                        </Nav.Link>
-                    </ListGroup.Item>
 
                     <ListGroup.Item className="bg-warning border-0">
                         <Nav.Link as={Link} to="/productos" className="d-flex align-items-center gap-3 text-dark fw-bold fs-5">
@@ -48,11 +25,7 @@ const Menu = ({ isOpen, onClose }) => {
                         </Nav.Link>
                     </ListGroup.Item>
 
-                    <ListGroup.Item className="bg-warning border-0">
-                        <Nav.Link as={Link} to="/configuracion" className="d-flex align-items-center gap-3 text-dark fw-bold fs-5">
-                            <FaCog /> Configuración
-                        </Nav.Link>
-                    </ListGroup.Item>
+                    
                 </ListGroup>
             </Offcanvas.Body>
 
