@@ -39,14 +39,14 @@ const Footer = () => {
                         <h6 className="fw-bold">Quiénes Somos</h6>
                         <ul className="list-unstyled" style={{ fontSize: "14px" }}>
                             <li><Link to="/quienes-somos" className="text-light text-decoration-none">Misión y Visión</Link></li>
-                            <li><Link to="/historia" className="text-light text-decoration-none">Nuestra Historia</Link></li>
-                            <li><Link to="/antecedentes" className="text-light text-decoration-none">Antecedentes</Link></li>
+                            <li><Link to="/Historia-Antecedentes" className="text-light text-decoration-none">Historia y Antecedentes</Link></li>
+                            <li><Link to="/Politicas" className="text-light text-decoration-none">Politicas</Link></li>
                         </ul>
                     </Col>
                     <Col md={4} className="text-center mb-3">
                         <h6 className="fw-bold">Contacto</h6>
                         <ul className="list-unstyled" style={{ fontSize: "14px" }}>
-                            <li><Link to="/Contactos" className="text-light text-decoration-none">Soporte</Link></li>
+                            <li><Link to="/Contactos" className="text-light text-decoration-none">Contactanos</Link></li>
                             <li><Link to="/preguntas-frecuentes" className="text-light text-decoration-none">Preguntas Frecuentes</Link></li>
                             <li><Link to="/sucursales" className="text-light text-decoration-none">Sucursales</Link></li>
                         </ul>

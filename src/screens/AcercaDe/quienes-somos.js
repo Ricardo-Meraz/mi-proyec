@@ -1,72 +1,127 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Card, Container, Row, Col } from "react-bootstrap";
+import axios from "axios";
 
 const QuienesSomos = () => {
+  const [info, setInfo] = useState({ mision: "", vision: "", valores: "" });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    axios
+      .get("https://servidor-bbkq.vercel.app/mision-vision/ver") // ✅ Ruta corregida con /ver
+      .then((response) => {
+        setInfo(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error al obtener datos:", error);
+        setError("No se pudo cargar la información.");
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <p className="text-center">Cargando información...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center text-danger">{error}</p>;
+  }
+
   return (
-    <Container className="mt-5">
-      <h2 className="text-center mb-4 text-success">Quiénes Somos</h2>
-      <p className="text-center">
-        En <strong>InvernaTech</strong>, nos dedicamos a la innovación en tecnología agrícola, 
-        ofreciendo soluciones inteligentes para mejorar la eficiencia en los invernaderos.
-      </p>
+    <div className="d-flex flex-column min-vh-100">
+      <Container className="mt-5 flex-grow-1">
+        {/* Título Central */}
+        <div className="text-center mb-5">
+          <h2 className="fw-bold" style={{ color: "#2E7D32", fontSize: "3rem" }}>
+            🌱 ¿Quiénes Somos?
+          </h2>
+          <p className="lead text-muted" style={{ fontSize: "1.3rem" }}>
+            En <strong>InvernaTech</strong>, fusionamos la tecnología con la agricultura para crear soluciones inteligentes 
+            que optimicen la producción y el uso sostenible de los recursos.
+          </p>
+        </div>
 
-      <Row className="mt-4">
-        {/* Misión */}
-        <Col md={6} className="mb-4">
-          <Card className="shadow-lg" style={{ backgroundColor: "#8D6E63", color: "white" }}>
-            <Card.Body>
-              <Card.Title className="text-center text-warning">🌱 Nuestra Misión</Card.Title>
-              <Card.Text>
-                Proporcionar herramientas tecnológicas avanzadas que optimicen el 
-                crecimiento de cultivos dentro de invernaderos, promoviendo la 
-                sostenibilidad y la eficiencia en la producción agrícola.
-              </Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
+        <Row className="g-4 justify-content-center">
+          {/* Misión */}
+          <Col md={4}>
+            <Card
+              className="shadow-lg text-white h-100 p-4"
+              style={{
+                background: "linear-gradient(135deg, #388E3C, #2E7D32)",
+                borderRadius: "20px",
+                transition: "transform 0.3s",
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.07)")}
+              onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            >
+              <Card.Body>
+                <Card.Title className="text-center fw-bold fs-3">🌍 Nuestra Misión</Card.Title>
+                <Card.Text className="text-center" style={{ fontSize: "1.2rem" }}>
+                  {info.mision || "No disponible"}
+                </Card.Text>
+              </Card.Body>
+            </Card>
+          </Col>
 
-        {/* Visión */}
-        <Col md={6} className="mb-4">
-          <Card className="shadow-lg" style={{ backgroundColor: "#4CAF50", color: "white" }}>
-            <Card.Body>
-              <Card.Title className="text-center text-warning">🚀 Nuestra Visión</Card.Title>
-              <Card.Text>
-                Ser líderes en el desarrollo de sistemas inteligentes para invernaderos, 
-                transformando la agricultura mediante la automatización y la inteligencia artificial.
-              </Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
+          {/* Visión */}
+          <Col md={4}>
+            <Card
+              className="shadow-lg text-white h-100 p-4"
+              style={{
+                background: "linear-gradient(135deg, #1976D2, #1565C0)",
+                borderRadius: "20px",
+                transition: "transform 0.3s",
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.07)")}
+              onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            >
+              <Card.Body>
+                <Card.Title className="text-center fw-bold fs-3">🚀 Nuestra Visión</Card.Title>
+                <Card.Text className="text-center" style={{ fontSize: "1.2rem" }}>
+                  {info.vision || "No disponible"}
+                </Card.Text>
+              </Card.Body>
+            </Card>
+          </Col>
 
-        {/* Historial */}
-        <Col md={6} className="mb-4">
-          <Card className="shadow-lg" style={{ backgroundColor: "#795548", color: "white" }}>
-            <Card.Body>
-              <Card.Title className="text-center text-warning">📜 Historial</Card.Title>
-              <Card.Text>
-                Desde nuestra fundación en 2020, InvernaTech ha trabajado con agricultores para 
-                mejorar el rendimiento de sus cultivos a través de la innovación tecnológica.
-              </Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
+          {/* Valores */}
+          <Col md={4}>
+            <Card
+              className="shadow-lg text-white h-100 p-4"
+              style={{
+                background: "linear-gradient(135deg, #FF6F00, #E65100)",
+                borderRadius: "20px",
+                transition: "transform 0.3s",
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.07)")}
+              onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            >
+              <Card.Body>
+                <Card.Title className="text-center fw-bold fs-3">💡 Nuestros Valores</Card.Title>
+                <Card.Text className="text-center" style={{ fontSize: "1.2rem" }}>
+                  {info.valores || "No disponible"}
+                </Card.Text>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
 
-        {/* Antecedentes */}
-        <Col md={6} className="mb-4">
-          <Card className="shadow-lg" style={{ backgroundColor: "#2E7D32", color: "white" }}>
-            <Card.Body>
-              <Card.Title className="text-center text-warning">🏛️ Antecedentes</Card.Title>
-              <Card.Text>
-                Nuestro equipo está compuesto por expertos en tecnología agrícola, 
-                ingeniería y automatización, con el objetivo de revolucionar la forma 
-                en que se gestionan los invernaderos.
-              </Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+      {/* Footer Fijo */}
+      <footer
+        className="mt-auto text-center text-white py-3"
+        style={{
+          background: "linear-gradient(135deg, #043200, #0b4a1b)",
+          marginTop: "50px",
+        }}
+      >
+        <h5 className="m-0">🌿 INVERNATECH</h5>
+        <p className="m-0">Innovación y tecnología para la agricultura sostenible.</p>
+      </footer>
+    </div>
   );
 };
 

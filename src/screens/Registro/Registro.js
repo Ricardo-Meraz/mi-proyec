@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Container, Row, Col, Form, Button, Modal } from "react-bootstrap";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Se agregó para la redirección
+import { useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Registro = () => {
-  const navigate = useNavigate(); // Se instancia el hook de navegación
+  const navigate = useNavigate();
 
   const initialFormData = {
     nombre: "",
@@ -12,7 +13,7 @@ const Registro = () => {
     apellidoM: "",
     telefono: "",
     email: "",
-    contraseña: "",
+    password: "",
     confirmarContraseña: "",
     sexo: "",
     edad: "",
@@ -20,169 +21,135 @@ const Registro = () => {
     respuesta_recuperacion: "",
   };
 
-  // Estado para almacenar los valores del formulario
   const [formData, setFormData] = useState(initialFormData);
-  // Estado para controlar el modal
   const [showModal, setShowModal] = useState(false);
-  // Estados para controlar la visualización de las contraseñas
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState(null);
+  const [step, setStep] = useState(1); // Estado para manejar los pasos del formulario
 
   // Manejar cambios en los inputs
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Funciones para alternar la visualización de las contraseñas
-  const togglePassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const toggleConfirmPassword = () => {
-    setShowConfirmPassword(!showConfirmPassword);
+  const validateForm = () => {
+    if (!formData.nombre || !formData.apellidoP || !formData.telefono || !formData.email ||
+      !formData.password || !formData.confirmarContraseña || !formData.sexo ||
+      !formData.edad || !formData.pregunta_recuperacion || !formData.respuesta_recuperacion) {
+      setError("Todos los campos son obligatorios.");
+      return false;
+    }
+    if (!formData.email.includes("@")) {
+      setError("Ingrese un correo electrónico válido.");
+      return false;
+    }
+    if (!/^\d{10}$/.test(formData.telefono)) {
+      setError("El teléfono debe tener 10 dígitos.");
+      return false;
+    }
+    if (formData.password.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres.");
+      return false;
+    }
+    if (formData.password !== formData.confirmarContraseña) {
+      setError("Las contraseñas no coinciden.");
+      return false;
+    }
+    return true;
   };
 
   // Manejar envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
 
-    // Validación: la contraseña debe tener al menos 8 caracteres,
-    // incluir mayúsculas, minúsculas, números y un caracter especial
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-    if (!passwordRegex.test(formData.contraseña)) {
-      alert(
-        "La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y un caracter especial."
-      );
-      return;
-    }
-
-    // Validación: las contraseñas deben coincidir
-    if (formData.contraseña !== formData.confirmarContraseña) {
-      alert("Las contraseñas no coinciden");
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
-      await axios.post("http://localhost:5000/registro", formData);
-      // Registro exitoso: se muestra el modal y se limpian los campos
-      setShowModal(true);
-      setFormData(initialFormData);
+      const response = await axios.post(
+        "https://servidor-bbkq.vercel.app/usuarios/registro",
+        formData
+      );
+
+      if (response.status === 201) {
+        setShowModal(true);
+        setFormData(initialFormData);
+      }
     } catch (error) {
-      alert(error.response?.data?.mensaje || "Error al registrar usuario");
+      setError(error.response?.data?.mensaje || "Error al registrar usuario.");
     }
-  };
-
-  // Estilos en línea
-  const styles = {
-    backgroundImage: "url('./imgs/cielos.jpg')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  };
-
-  const overlayStyles = {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(13, 4, 4, 0.5)",
-    zIndex: 1,
-  };
-
-  const contentStyles = {
-    position: "relative",
-    zIndex: 2,
   };
 
   return (
-    <div style={styles}>
-      <div style={overlayStyles}></div>
-      <Container style={contentStyles} className="mt-4 p-5 text-dark">
-        <Row className="justify-content-center">
-          <Col md={6} className="bg-white p-4 rounded shadow">
-            <h2 className="text-center fw-bold">Regístrate</h2>
-            <Form onSubmit={handleSubmit}>
+    <div className="d-flex align-items-center justify-content-center min-vh-100"
+      style={{
+        backgroundImage: "url('./imgs/cielos.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        padding: "20px"
+      }}>
+      <Container className="p-4 bg-white shadow-lg rounded" style={{ maxWidth: "500px" }}>
+        <h2 className="text-center fw-bold text-success mb-3">Regístrate</h2>
+
+        {error && <div className="alert alert-danger text-center">{error}</div>}
+
+        <Form onSubmit={handleSubmit}>
+          {step === 1 && (
+            <>
               <Form.Group className="mb-3">
                 <Form.Label>Nombre</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="nombre"
-                  onChange={handleChange}
-                  required
-                  value={formData.nombre}
-                />
+                <Form.Control type="text" name="nombre" onChange={handleChange} required />
               </Form.Group>
 
               <Form.Group className="mb-3">
                 <Form.Label>Apellido Paterno</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="apellidoP"
-                  onChange={handleChange}
-                  required
-                  value={formData.apellidoP}
-                />
+                <Form.Control type="text" name="apellidoP" onChange={handleChange} required />
               </Form.Group>
 
               <Form.Group className="mb-3">
                 <Form.Label>Apellido Materno</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="apellidoM"
-                  onChange={handleChange}
-                  value={formData.apellidoM}
-                />
+                <Form.Control type="text" name="apellidoM" onChange={handleChange} />
               </Form.Group>
 
               <Form.Group className="mb-3">
                 <Form.Label>Teléfono</Form.Label>
-                <Form.Control
-                  type="tel"
-                  name="telefono"
-                  onChange={handleChange}
-                  required
-                  value={formData.telefono}
-                />
+                <Form.Control type="tel" name="telefono" onChange={handleChange} required />
               </Form.Group>
 
               <Form.Group className="mb-3">
                 <Form.Label>Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  name="email"
-                  onChange={handleChange}
-                  required
-                  value={formData.email}
-                />
+                <Form.Control type="email" name="email" onChange={handleChange} required />
               </Form.Group>
 
+              <Button variant="primary" className="w-100" onClick={() => setStep(2)}>
+                Siguiente
+              </Button>
+            </>
+          )}
+
+          {step === 2 && (
+            <>
               <Form.Group className="mb-3">
                 <Form.Label>Contraseña</Form.Label>
                 <div className="position-relative">
                   <Form.Control
                     type={showPassword ? "text" : "password"}
-                    name="contraseña"
+                    name="password"
                     onChange={handleChange}
                     required
-                    value={formData.contraseña}
                   />
                   <span
-                    onClick={togglePassword}
+                    onClick={() => setShowPassword(!showPassword)}
                     style={{
                       position: "absolute",
                       right: 10,
                       top: "50%",
                       transform: "translateY(-50%)",
-                      cursor: "pointer",
+                      cursor: "pointer"
                     }}
                   >
-                    👁️
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </span>
                 </div>
               </Form.Group>
@@ -195,31 +162,25 @@ const Registro = () => {
                     name="confirmarContraseña"
                     onChange={handleChange}
                     required
-                    value={formData.confirmarContraseña}
                   />
                   <span
-                    onClick={toggleConfirmPassword}
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     style={{
                       position: "absolute",
                       right: 10,
                       top: "50%",
                       transform: "translateY(-50%)",
-                      cursor: "pointer",
+                      cursor: "pointer"
                     }}
                   >
-                    👁️
+                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                   </span>
                 </div>
               </Form.Group>
 
               <Form.Group className="mb-3">
                 <Form.Label>Sexo</Form.Label>
-                <Form.Select
-                  name="sexo"
-                  onChange={handleChange}
-                  required
-                  value={formData.sexo}
-                >
+                <Form.Select name="sexo" onChange={handleChange} required>
                   <option value="">Seleccione una opción</option>
                   <option value="masculino">Masculino</option>
                   <option value="femenino">Femenino</option>
@@ -228,27 +189,25 @@ const Registro = () => {
 
               <Form.Group className="mb-3">
                 <Form.Label>Edad</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="edad"
-                  onChange={handleChange}
-                  required
-                  value={formData.edad}
-                />
+                <Form.Control type="number" name="edad" onChange={handleChange} required />
               </Form.Group>
 
+              <Button variant="secondary" className="w-100 mb-2" onClick={() => setStep(1)}>
+                Atrás
+              </Button>
+              <Button variant="primary" className="w-100" onClick={() => setStep(3)}>
+                Siguiente
+              </Button>
+            </>
+          )}
+
+          {step === 3 && (
+            <>
               <Form.Group className="mb-3">
                 <Form.Label>Pregunta de recuperación</Form.Label>
-                <Form.Select
-                  name="pregunta_recuperacion"
-                  onChange={handleChange}
-                  required
-                  value={formData.pregunta_recuperacion}
-                >
+                <Form.Select name="pregunta_recuperacion" onChange={handleChange} required>
                   <option value="">Seleccione una pregunta</option>
-                  <option value="1">
-                    ¿Cuál es el nombre de tu primera mascota?
-                  </option>
+                  <option value="1">¿Cuál es el nombre de tu primera mascota?</option>
                   <option value="2">¿En qué ciudad naciste?</option>
                   <option value="3">¿Cuál es tu comida favorita?</option>
                 </Form.Select>
@@ -256,41 +215,19 @@ const Registro = () => {
 
               <Form.Group className="mb-3">
                 <Form.Label>Respuesta de recuperación</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="respuesta_recuperacion"
-                  onChange={handleChange}
-                  required
-                  value={formData.respuesta_recuperacion}
-                />
+                <Form.Control type="text" name="respuesta_recuperacion" onChange={handleChange} required />
               </Form.Group>
 
+              <Button variant="secondary" className="w-100 mb-2" onClick={() => setStep(2)}>
+                Atrás
+              </Button>
               <Button variant="success" type="submit" className="w-100">
                 Registrarse
               </Button>
-            </Form>
-          </Col>
-        </Row>
+            </>
+          )}
+        </Form>
       </Container>
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Registro Exitoso</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>Usuario registrado con éxito.</p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            variant="success"
-            onClick={() => {
-              setShowModal(false);
-              navigate("/login"); // Se redirige a login.js al presionar Aceptar
-            }}
-          >
-            Aceptar
-          </Button>
-        </Modal.Footer>
-      </Modal>
     </div>
   );
 };

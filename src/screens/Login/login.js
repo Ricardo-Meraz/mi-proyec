@@ -13,10 +13,10 @@ const Login = () => {
     setError("");
 
     try {
-        const response = await fetch("http://localhost:5000/login", {
+        const response = await fetch("https://servidor-bbkq.vercel.app/Usuarios/login", { // ✅ URL corregida
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, contraseña: password }),
+            body: JSON.stringify({ email, password }), // ✅ Usamos "password" en lugar de "contraseña"
         });
 
         const data = await response.json();
@@ -24,10 +24,10 @@ const Login = () => {
             localStorage.setItem("user", JSON.stringify(data.usuario));
             navigate("/");
         } else {
-            setError(data.mensaje || "Error al iniciar sesión");
+            setError(data.mensaje || "Correo o contraseña incorrectos");
         }
     } catch (err) {
-        setError("Error en el servidor, intenta nuevamente");
+        setError("No se pudo conectar al servidor. Intenta nuevamente.");
     }
   };
 

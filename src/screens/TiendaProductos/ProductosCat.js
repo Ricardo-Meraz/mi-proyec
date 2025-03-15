@@ -2,22 +2,25 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import ProductCard from '../../components/cartproductos/cartproductos';
-import { Container, Row, Col, Button } from 'react-bootstrap';
-
-const categorias = ['Todos', 'Invernaderos', 'Herramientas', 'Fertilizantes', 'Sustratos'];
+import { Container, Row, Col } from 'react-bootstrap';
 
 const ProductosCat = () => {
     const [productos, setProductos] = useState([]);
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [searchParams] = useSearchParams();
     const categoriaSeleccionada = searchParams.get("categoria") || "Todos";
 
     useEffect(() => {
         const fetchProductos = async () => {
             try {
-                const respuesta = await axios.get('http://localhost:5000/productos');
+                const respuesta = await axios.get('https://servidor-bbkq.vercel.app/Productos'); // ✅ URL corregida
                 setProductos(respuesta.data);
+                setLoading(false);
             } catch (error) {
                 console.error('Error al obtener los productos:', error);
+                setError('No se pudieron cargar los productos. Intenta nuevamente.');
+                setLoading(false);
             }
         };
         fetchProductos();
@@ -27,21 +30,17 @@ const ProductosCat = () => {
         ? productos
         : productos.filter(producto => producto.categoria === categoriaSeleccionada);
 
+    if (loading) {
+        return <p className="text-center">Cargando productos...</p>;
+    }
+
+    if (error) {
+        return <p className="text-center text-danger">{error}</p>;
+    }
+
     return (
         <Container>
             <h2 className="text-center my-4">Productos</h2>
-            <div className="d-flex justify-content-center mb-4">
-                {categorias.map((cat) => (
-                    <Button 
-                        key={cat} 
-                        onClick={() => setSearchParams({ categoria: cat })}
-                        variant={categoriaSeleccionada === cat ? 'primary' : 'outline-primary'}
-                        className="mx-2"
-                    >
-                        {cat}
-                    </Button>
-                ))}
-            </div>
             <Row>
                 {productosFiltrados.length > 0 ? (
                     productosFiltrados.map(producto => (

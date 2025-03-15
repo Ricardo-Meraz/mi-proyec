@@ -1,45 +1,52 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Container, Card, Breadcrumb } from "react-bootstrap";
 
+// Definir la URL base de la API
+const API_BASE_URL = process.env.REACT_APP_API_URL || "https://servidor-bbkq.vercel.app";
+
 const DetalleProducto = () => {
   const { id } = useParams();
+  const navigate = useNavigate(); // Hook para redirección
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/productos/${id}`)
+    axios.get(`${API_BASE_URL}/productos/${id}`)
       .then((response) => {
         setProducto(response.data);
         setLoading(false);
       })
       .catch((error) => {
         console.error("Error al obtener el producto:", error);
+        setError("No se pudo cargar el producto. Intenta nuevamente.");
         setLoading(false);
       });
   }, [id]);
 
   if (loading) {
-    return <p>Cargando detalles del producto...</p>;
+    return <p className="text-center">Cargando detalles del producto...</p>;
+  }
+
+  if (error) {
+    return <p className="text-danger text-center">{error}</p>;
   }
 
   if (!producto) {
-    return <p>Producto no encontrado.</p>;
+    return <p className="text-center">Producto no encontrado.</p>;
   }
 
   return (
     <Container className="mt-4">
-      {/* Migas de Pan */}
-      <Breadcrumb>  
-        <Breadcrumb.Item as={Link} to="/">
+      {/* Migas de Pan (sin la categoría) */}
+      <Breadcrumb>
+        <Breadcrumb.Item onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
           Home
         </Breadcrumb.Item>
-        <Breadcrumb.Item as={Link} to="/ProductosCat">
+        <Breadcrumb.Item onClick={() => navigate("/ProductosCat")} style={{ cursor: "pointer" }}>
           Productos
-        </Breadcrumb.Item>
-        <Breadcrumb.Item as={Link} to={`/ProductosCat?categoria=${producto.categoria}`}>
-          {producto.categoria}
         </Breadcrumb.Item>
         <Breadcrumb.Item active>{producto.nombre}</Breadcrumb.Item>
       </Breadcrumb>
@@ -48,6 +55,7 @@ const DetalleProducto = () => {
         <Card.Img 
           variant="top" 
           src={producto.imagenUrl} 
+          alt={producto.nombre}
           style={{
             maxHeight: "400px",
             width: "100%",
@@ -55,12 +63,9 @@ const DetalleProducto = () => {
           }}
         />
         <Card.Body>
-          <Card.Title>{producto.nombre}</Card.Title>
+          <Card.Title className="fw-bold">{producto.nombre}</Card.Title>
           <Card.Text>
             <strong>Descripción:</strong> {producto.descripcion}
-          </Card.Text>
-          <Card.Text>
-            <strong>Categoría:</strong> {producto.categoria}
           </Card.Text>
           <Card.Text>
             <strong>Precio:</strong> ${producto.precio}

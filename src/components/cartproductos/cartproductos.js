@@ -8,26 +8,38 @@ const ProductCard = ({ id, image, title, description }) => {
 
   return (
     <Card 
-      className="shadow-sm text-center h-100" 
-      style={{ borderRadius: "10px", border: "none", transition: "transform 0.2s", cursor: "pointer" }}
-      onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.03)"}
+      className="shadow-sm text-center"
+      style={{ 
+        width: "300px",  
+        borderRadius: "12px", 
+        border: "none", 
+        transition: "transform 0.2s ease-in-out", 
+        cursor: "pointer",
+      }}
+      onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.05)"}
       onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
     >
-      <Card.Img 
-        variant="top" 
-        src={image} 
-        className="p-3" 
-        style={{ height: "200px", objectFit: "cover", borderTopLeftRadius: "10px", borderTopRightRadius: "10px" }} 
-      />
-      <Card.Body className="d-flex flex-column">
-        <Card.Title>{title}</Card.Title>
-        <Card.Text>{description}</Card.Text>
+      <div style={{ height: "160px", overflow: "hidden", padding: "5px" }}>
+        <Card.Img 
+          variant="top" 
+          src={image} 
+          alt={title}
+          style={{ 
+            width: "100%", 
+            height: "100%", 
+            objectFit: "contain"
+          }} 
+        />
+      </div>
+      <Card.Body className="d-flex flex-column justify-content-between">
+        <Card.Title className="fs-6">{title}</Card.Title>
+        <Card.Text className="text-muted" style={{ fontSize: "0.75rem" }}>
+          {description}
+        </Card.Text>
         <Button 
-          variant="primary"
-          onClick={() => {
-            console.log("Redirigiendo a producto:", id); // Verifica si el ID está bien
-            navigate(`/producto/${id}`);
-          }}
+          variant="success"
+          size="sm"
+          onClick={() => navigate(`/producto/${id}`)}
         >
           Ver más
         </Button>
