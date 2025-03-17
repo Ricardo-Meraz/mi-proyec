@@ -14,28 +14,39 @@ import CloudinaryUpload from "./components/cloudinary/cloudinary";
 import ProductosCat from "./screens/TiendaProductos/ProductosCat";
 import DetalleProducto from "./screens/DetalleProducto/detalleProducto";
 import EditProductos from "./screens/AdminProductos/EditProductos";
-import HistoriaAntecedentes from "./screens/Historia-Antecedentes/Historia-Antecedentes"; // ✅ Nueva importación
+import HistoriaAntecedentes from "./screens/Historia-Antecedentes/Historia-Antecedentes";
+import EditarProductos from "./screens/AdminProductos/EditarProductos";
+import AdmUsuarios from "./screens/AdminUsuarios/AdmUsuarios";
+import AdmQuienesSomos from "./screens/AdminQuines-Somos/AdmQuienes-Somos";
+import EditarQuienesSomos from "./screens/AdminQuines-Somos/EditarQuienes-Somos"; // <-- Agrega esta línea
+import { UserProvider } from "./screens/UserContext/UserContext";
 
 const App = () => {
   return (
-    <Router>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/quienes-somos" element={<QuienesSomos />} />
-        <Route path="/contactos" element={<Contacto />} />
-        <Route path="/registro" element={<Registro />} />
-        <Route path="/preguntas-frecuentes" element={<PreguntasFrecuentes />} />
-        <Route path="/politicas" element={<Politicas />} />
-        <Route path="/upload" element={<CloudinaryUpload />} />
-        <Route path="/ProductosCat" element={<ProductosCat />} />
-        <Route path="/producto/:id" element={<DetalleProducto />} />
-        <Route path="/editar-productos" element={<EditProductos />} />
-        <Route path="/historia-antecedentes" element={<HistoriaAntecedentes />} /> {/* ✅ Nueva ruta */}
-      </Routes>
-      <Footer />
-    </Router>
+    <UserProvider>
+      <Router>
+        <Header />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/quienes-somos" element={<QuienesSomos />} />
+          <Route path="/contactos" element={<Contacto />} />
+          <Route path="/registro" element={<Registro />} />
+          <Route path="/preguntas-frecuentes" element={<PreguntasFrecuentes />} />
+          <Route path="/politicas" element={<Politicas />} />
+          <Route path="/upload" element={<CloudinaryUpload />} />
+          <Route path="/ProductosCat" element={<ProductosCat />} />
+          <Route path="/producto/:id" element={<DetalleProducto />} />
+          <Route path="/editar-productos" element={<EditProductos />} />
+          <Route path="/historia-antecedentes" element={<HistoriaAntecedentes />} />
+          <Route path="/editar-producto/:id" element={<EditarProductos />} />
+          <Route path="/admin-usuarios" element={<AdmUsuarios />} />
+          <Route path="/admin/quienes-somos" element={<AdmQuienesSomos />} />
+          <Route path="/editar-quienes-somos/:section/:id" element={<EditarQuienesSomos />} />
+        </Routes>
+        <Footer />
+      </Router>
+    </UserProvider>
   );
 };
 

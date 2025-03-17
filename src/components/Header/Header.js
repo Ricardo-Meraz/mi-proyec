@@ -1,43 +1,29 @@
-import React, { useState, useEffect } from "react";
+// Header.js
+import React, { useContext } from "react";
 import { Container, Navbar, Nav, Button, Dropdown } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUser, FaBars, FaBoxOpen, FaSignOutAlt, FaCogs } from "react-icons/fa";
 import Sidebar from "../Menu/Menu";
 import logo from "./logo.jpg";
+import { UserContext } from "../../screens/UserContext/UserContext";  // Asegúrate de ajustar la ruta
 
 const Header = () => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [user, setUser] = useState(null);
-    const navigate = useNavigate(); // Para manejar redirecciones
+    const { user, setUser } = useContext(UserContext);
+    const navigate = useNavigate();
+    const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
     // Categorías de productos
     const categorias = ["Todos", "Invernaderos", "Herramientas", "Fertilizantes", "Sustratos"];
 
-    // Cargar usuario desde localStorage al montar el componente
-    useEffect(() => {
-        const storedUser = JSON.parse(localStorage.getItem("user"));
-        setUser(storedUser);
-
-        // Escuchar cambios en localStorage
-        const handleStorageChange = () => {
-            const updatedUser = JSON.parse(localStorage.getItem("user"));
-            setUser(updatedUser);
-        };
-
-        window.addEventListener("storage", handleStorageChange);
-        return () => window.removeEventListener("storage", handleStorageChange);
-    }, []);
-
     const handleLogout = () => {
-        localStorage.removeItem("user"); // Elimina el usuario de localStorage
-        setUser(null); // Actualiza el estado para ocultar el nombre
-        window.location.href = "/login"; // Redirige al login
+        setUser(null);  // Actualiza el contexto para eliminar el usuario
+        navigate("/login");
     };
 
     // Maneja la selección de una categoría
     const handleSelectCategoria = (categoria) => {
         if (categoria === "Todos") {
-            navigate("/ProductosCat"); // Si es "Todos", va a la página general de productos
+            navigate("/ProductosCat");
         } else {
             navigate(`/ProductosCat?categoria=${encodeURIComponent(categoria)}`);
         }
@@ -74,12 +60,10 @@ const Header = () => {
                     </Navbar.Brand>
 
                     <Nav className="ms-auto d-flex align-items-center">
-                        {/* ✅ Botón de Productos convertido en un menú desplegable */}
                         <Dropdown>
                             <Dropdown.Toggle variant="outline-light" className="me-2">
                                 <FaBoxOpen className="me-1" /> Productos
                             </Dropdown.Toggle>
-
                             <Dropdown.Menu>
                                 {categorias.map((categoria) => (
                                     <Dropdown.Item key={categoria} onClick={() => handleSelectCategoria(categoria)}>
@@ -89,14 +73,13 @@ const Header = () => {
                             </Dropdown.Menu>
                         </Dropdown>
 
-                        {/* ✅ Agregar menú Administrar si el usuario es Admin */}
                         {user?.rol === "Admin" && (
                             <Dropdown className="me-3">
                                 <Dropdown.Toggle variant="outline-light">
                                     <FaCogs className="me-1" /> Administrar
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu>
-                                    <Dropdown.Item as={Link} to="/admin/usuarios">Administrar Usuarios</Dropdown.Item>
+                                    <Dropdown.Item as={Link} to="/admin-usuarios">Administrar Usuarios</Dropdown.Item>
                                     <Dropdown.Item as={Link} to="/admin/quienes-somos">Administrar Quiénes Somos</Dropdown.Item>
                                     <Dropdown.Item as={Link} to="/editar-productos">Administrar Productos</Dropdown.Item>
                                     <Dropdown.Item as={Link} to="/admin/politicas">Administrar Políticas</Dropdown.Item>
@@ -126,7 +109,6 @@ const Header = () => {
                     </Nav>
                 </Container>
             </Navbar>
-
             <Sidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
         </>
     );

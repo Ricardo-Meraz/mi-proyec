@@ -24,7 +24,8 @@ const EditProductos = () => {
 
   // 🔥 Redirigir al formulario de edición con el ID del producto
   const editarProducto = (id) => {
-    navigate(`/editar-producto/${id}`);
+    console.log(`Redirigiendo a /editar-producto/${id}`); // ✅ Debugging para ver el ID
+    navigate(`/editar-producto/${id}`); // ✅ Ahora va a `EditarProductos.js`
   };
 
   // 🔥 Eliminar un producto por ID
@@ -41,16 +42,24 @@ const EditProductos = () => {
     }
   };
 
+  // 🔥 Agregar un nuevo producto
+  const agregarProducto = () => {
+    navigate("/agregar-producto"); // ✅ Redirige a la página para agregar productos
+  };
+
   return (
     <Container className="mt-4">
       <h2 className="text-center text-success mb-4">Administrar Productos</h2>
+
+      {/* ✅ Botón para agregar producto */}
+      <Button variant="success" className="mb-3" onClick={agregarProducto}>
+        + Agregar Producto
+      </Button>
 
       <Table striped bordered hover responsive className="shadow-lg">
         <thead className="bg-success text-white text-center">
           <tr>
             <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Precio</th>
             <th>Categoría</th>
             <th>Acciones</th>
           </tr>
@@ -60,14 +69,12 @@ const EditProductos = () => {
             productos.map((producto) => (
               <tr key={producto._id}>
                 <td>{producto.nombre}</td>
-                <td>{producto.descripcion}</td>
-                <td>${producto.precio}</td>
                 <td>{producto.categoria}</td>
                 <td className="text-center">
                   <Button
                     variant="warning"
                     className="me-2"
-                    onClick={() => editarProducto(producto._id)}
+                    onClick={() => editarProducto(producto._id)} // ✅ Redirige a `EditarProductos.js`
                   >
                     Editar
                   </Button>
@@ -82,7 +89,7 @@ const EditProductos = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="5" className="text-center text-muted">
+              <td colSpan="3" className="text-center text-muted">
                 No hay productos disponibles.
               </td>
             </tr>

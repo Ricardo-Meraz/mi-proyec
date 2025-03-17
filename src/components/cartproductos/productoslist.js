@@ -9,7 +9,8 @@ const ProductList = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios.get("https://servidor-bbkq.vercel.app/Productos")  // ✅ URL de la API
+    axios
+      .get("https://servidor-bbkq.vercel.app/Productos") // ✅ URL de la API
       .then((response) => {
         console.log("Productos recibidos:", response.data);
         setProductos(response.data.slice(0, 8)); // Limita a 8 productos
@@ -36,24 +37,49 @@ const ProductList = () => {
 
   return (
     <Container className="mt-4 text-center">
-      <p className="text-muted">Explora nuestros productos</p>
-      <div 
+      <p className="text-muted fs-5">Explora nuestros productos</p>
+
+      <div
         style={{
           display: "flex",
-          overflowX: "auto",  // 📌 Permite desplazamiento horizontal
-          whiteSpace: "nowrap",  // 📌 Evita que los productos bajen de línea
-          gap: "10px", // 📌 Espaciado entre productos
-          paddingBottom: "10px",
-          scrollSnapType: "x mandatory"  // 📌 Hace que el scroll sea más suave
+          overflowX: "auto",
+          whiteSpace: "nowrap",
+          gap: "15px",
+          paddingBottom: "15px",
+          scrollSnapType: "x mandatory",
+          scrollbarWidth: "none", // Oculta scrollbar en Firefox
+          msOverflowStyle: "none", // Oculta scrollbar en IE/Edge
         }}
       >
+        {/* Oculta scrollbar en Chrome y Safari */}
+        <style>
+          {`
+            div::-webkit-scrollbar {
+              display: none;
+            }
+          `}
+        </style>
+
         {productos.map((producto) => (
-          <div key={producto._id} style={{ flex: "0 0 auto", width: "250px" }}> {/* 📌 Tarjetas en una sola línea */}
-            <ProductCard 
-              id={producto._id} 
-              image={producto.imagenUrl} 
-              title={producto.nombre} 
-              description={`Precio: $${producto.precio}`} 
+          <div
+            key={producto._id}
+            style={{
+              flex: "0 0 auto",
+              width: "260px",
+              borderRadius: "12px",
+              boxShadow: "0px 4px 10px rgba(0,0,0,0.1)",
+              backgroundColor: "white",
+              padding: "10px",
+              transition: "transform 0.3s ease",
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+            onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+          >
+            <ProductCard
+              id={producto._id}
+              image={producto.imagenUrl}
+              title={producto.nombre}
+              description={`Precio: $${producto.precio}`}
             />
           </div>
         ))}

@@ -1,11 +1,14 @@
-import React, { useState } from "react";
-import { Container, Row, Col, Form, Button, Modal } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Container, Form, Button, Modal } from "react-bootstrap";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Registro = () => {
+  // =============================
+  // Configuración inicial y estados
+  // =============================
   const navigate = useNavigate();
+  const API_URL = "https://servidor-bbkq.vercel.app"; // Ajusta tu URL si es distinto
 
   const initialFormData = {
     nombre: "",
@@ -22,56 +25,118 @@ const Registro = () => {
   };
 
   const [formData, setFormData] = useState(initialFormData);
-  const [showModal, setShowModal] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [preguntas, setPreguntas] = useState([]);
   const [error, setError] = useState(null);
-  const [step, setStep] = useState(1); // Estado para manejar los pasos del formulario
+  const [showModal, setShowModal] = useState(false);
+  const [step, setStep] = useState(1);
 
-  // Manejar cambios en los inputs
+  // =============================
+  // Obtención de preguntas (datos dinámicos)
+  // =============================
+  useEffect(() => {
+    const obtenerPreguntas = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/pregunta-recuperacion/ver`);
+        setPreguntas(response.data);
+      } catch (error) {
+        console.error("Error al obtener preguntas:", error);
+      }
+    };
+    obtenerPreguntas();
+  }, [API_URL]);
+
+  // =============================
+  // Manejo de inputs y cambios de estado
+  // =============================
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const validateForm = () => {
-    if (!formData.nombre || !formData.apellidoP || !formData.telefono || !formData.email ||
-      !formData.password || !formData.confirmarContraseña || !formData.sexo ||
-      !formData.edad || !formData.pregunta_recuperacion || !formData.respuesta_recuperacion) {
-      setError("Todos los campos son obligatorios.");
-      return false;
+  const handleSelectPregunta = (e) => {
+    setFormData({ ...formData, pregunta_recuperacion: e.target.value });
+  };
+
+  // =============================
+  // Validación por paso
+  // =============================
+  const validateStep = () => {
+    if (step === 1) {
+      // Datos personales
+      if (!formData.nombre || !formData.apellidoP || !formData.telefono || !formData.email) {
+        setError("Todos los campos del paso 1 son obligatorios.");
+        return false;
+      }
+      if (!formData.email.includes("@")) {
+        setError("Ingrese un correo electrónico válido.");
+        return false;
+      }
+      if (!/^\d{10}$/.test(formData.telefono)) {
+        setError("El teléfono debe tener 10 dígitos.");
+        return false;
+      }
+    } else if (step === 2) {
+      // Seguridad
+      if (!formData.password || !formData.confirmarContraseña) {
+        setError("Ambos campos de contraseña son obligatorios.");
+        return false;
+      }
+      if (formData.password.length < 8) {
+        setError("La contraseña debe tener al menos 8 caracteres.");
+        return false;
+      }
+      if (formData.password !== formData.confirmarContraseña) {
+        setError("Las contraseñas no coinciden.");
+        return false;
+      }
+    } else if (step === 3) {
+      // Información adicional
+      if (!formData.sexo || !formData.edad || !formData.pregunta_recuperacion || !formData.respuesta_recuperacion) {
+        setError("Todos los campos del paso 3 son obligatorios.");
+        return false;
+      }
     }
-    if (!formData.email.includes("@")) {
-      setError("Ingrese un correo electrónico válido.");
-      return false;
-    }
-    if (!/^\d{10}$/.test(formData.telefono)) {
-      setError("El teléfono debe tener 10 dígitos.");
-      return false;
-    }
-    if (formData.password.length < 8) {
-      setError("La contraseña debe tener al menos 8 caracteres.");
-      return false;
-    }
-    if (formData.password !== formData.confirmarContraseña) {
-      setError("Las contraseñas no coinciden.");
-      return false;
-    }
+    setError(null);
     return true;
   };
 
-  // Manejar envío del formulario
-  const handleSubmit = async (e) => {
+  // =============================
+  // Navegación entre pasos
+  // =============================
+  const handleNext = (e) => {
+    e.preventDefault();
+    if (validateStep()) {
+      setStep(step + 1);
+    }
+  };
+
+  const handlePrev = (e) => {
     e.preventDefault();
     setError(null);
+    setStep(step - 1);
+  };
 
-    if (!validateForm()) return;
+  // =============================
+  // Envío del formulario (último paso)
+  // =============================
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateStep()) return;
+
+    const datosAEnviar = {
+      nombre: formData.nombre,
+      apellidoP: formData.apellidoP,
+      apellidoM: formData.apellidoM,
+      telefono: formData.telefono,
+      email: formData.email,
+      password: formData.password,
+      sexo: formData.sexo,
+      edad: formData.edad,
+      pregunta_recuperacion: formData.pregunta_recuperacion, // ID (string)
+      respuesta_recuperacion: formData.respuesta_recuperacion,
+    };
 
     try {
-      const response = await axios.post(
-        "https://servidor-bbkq.vercel.app/usuarios/registro",
-        formData
-      );
-
+      const response = await axios.post(`${API_URL}/usuarios/registro`, datosAEnviar);
       if (response.status === 201) {
         setShowModal(true);
         setFormData(initialFormData);
@@ -81,152 +146,138 @@ const Registro = () => {
     }
   };
 
+  // =============================
+  // Renderizado de cada paso
+  // =============================
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return (
+          <>
+            <h4 className="mb-3">Datos Personales</h4>
+            <Form.Group className="mb-3">
+              <Form.Label>Nombre</Form.Label>
+              <Form.Control type="text" name="nombre" value={formData.nombre} onChange={handleChange} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Apellido Paterno</Form.Label>
+              <Form.Control type="text" name="apellidoP" value={formData.apellidoP} onChange={handleChange} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Apellido Materno</Form.Label>
+              <Form.Control type="text" name="apellidoM" value={formData.apellidoM} onChange={handleChange} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Teléfono</Form.Label>
+              <Form.Control type="tel" name="telefono" value={formData.telefono} onChange={handleChange} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} required />
+            </Form.Group>
+          </>
+        );
+      case 2:
+        return (
+          <>
+            <h4 className="mb-3">Seguridad</h4>
+            <Form.Group className="mb-3">
+              <Form.Label>Contraseña</Form.Label>
+              <Form.Control type="password" name="password" value={formData.password} onChange={handleChange} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Confirmar Contraseña</Form.Label>
+              <Form.Control type="password" name="confirmarContraseña" value={formData.confirmarContraseña} onChange={handleChange} required />
+            </Form.Group>
+          </>
+        );
+      case 3:
+        return (
+          <>
+            <h4 className="mb-3">Información Adicional</h4>
+            <Form.Group className="mb-3">
+              <Form.Label>Sexo</Form.Label>
+              <Form.Select name="sexo" value={formData.sexo} onChange={handleChange} required>
+                <option value="">Seleccione una opción</option>
+                <option value="masculino">Masculino</option>
+                <option value="femenino">Femenino</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Edad</Form.Label>
+              <Form.Control type="number" name="edad" value={formData.edad} onChange={handleChange} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Pregunta de recuperación</Form.Label>
+              <Form.Select name="pregunta_recuperacion" value={formData.pregunta_recuperacion} onChange={handleSelectPregunta} required>
+                <option value="">Seleccione una pregunta</option>
+                {preguntas.map((pregunta) => (
+                  <option key={pregunta._id} value={pregunta._id}>
+                    {pregunta.pregunta}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Respuesta de recuperación</Form.Label>
+              <Form.Control type="text" name="respuesta_recuperacion" value={formData.respuesta_recuperacion} onChange={handleChange} required />
+            </Form.Group>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  // =============================
+  // Renderizado final del componente
+  // =============================
   return (
-    <div className="d-flex align-items-center justify-content-center min-vh-100"
+    <div
       style={{
-        backgroundImage: "url('./imgs/cielos.jpg')",
+        backgroundImage: "url('/ruta/a/tu/imagen.jpg')", // Reemplaza con la ruta de tu imagen
         backgroundSize: "cover",
         backgroundPosition: "center",
+        minHeight: "100vh",
         padding: "20px"
-      }}>
-      <Container className="p-4 bg-white shadow-lg rounded" style={{ maxWidth: "500px" }}>
+      }}
+    >
+      <Container className="p-4 bg-white shadow-lg rounded" style={{ maxWidth: "500px", margin: "0 auto" }}>
         <h2 className="text-center fw-bold text-success mb-3">Regístrate</h2>
-
         {error && <div className="alert alert-danger text-center">{error}</div>}
-
-        <Form onSubmit={handleSubmit}>
-          {step === 1 && (
-            <>
-              <Form.Group className="mb-3">
-                <Form.Label>Nombre</Form.Label>
-                <Form.Control type="text" name="nombre" onChange={handleChange} required />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Apellido Paterno</Form.Label>
-                <Form.Control type="text" name="apellidoP" onChange={handleChange} required />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Apellido Materno</Form.Label>
-                <Form.Control type="text" name="apellidoM" onChange={handleChange} />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Teléfono</Form.Label>
-                <Form.Control type="tel" name="telefono" onChange={handleChange} required />
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Email</Form.Label>
-                <Form.Control type="email" name="email" onChange={handleChange} required />
-              </Form.Group>
-
-              <Button variant="primary" className="w-100" onClick={() => setStep(2)}>
+        <Form onSubmit={step === 3 ? handleSubmit : handleNext}>
+          {renderStep()}
+          <div className="d-flex justify-content-between">
+            {step > 1 && (
+              <Button variant="secondary" onClick={handlePrev}>
+                Anterior
+              </Button>
+            )}
+            {step < 3 && (
+              <Button variant="primary" type="submit">
                 Siguiente
               </Button>
-            </>
-          )}
-
-          {step === 2 && (
-            <>
-              <Form.Group className="mb-3">
-                <Form.Label>Contraseña</Form.Label>
-                <div className="position-relative">
-                  <Form.Control
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    onChange={handleChange}
-                    required
-                  />
-                  <span
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: "absolute",
-                      right: 10,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      cursor: "pointer"
-                    }}
-                  >
-                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                  </span>
-                </div>
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Confirmar Contraseña</Form.Label>
-                <div className="position-relative">
-                  <Form.Control
-                    type={showConfirmPassword ? "text" : "password"}
-                    name="confirmarContraseña"
-                    onChange={handleChange}
-                    required
-                  />
-                  <span
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    style={{
-                      position: "absolute",
-                      right: 10,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      cursor: "pointer"
-                    }}
-                  >
-                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                  </span>
-                </div>
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Sexo</Form.Label>
-                <Form.Select name="sexo" onChange={handleChange} required>
-                  <option value="">Seleccione una opción</option>
-                  <option value="masculino">Masculino</option>
-                  <option value="femenino">Femenino</option>
-                </Form.Select>
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Edad</Form.Label>
-                <Form.Control type="number" name="edad" onChange={handleChange} required />
-              </Form.Group>
-
-              <Button variant="secondary" className="w-100 mb-2" onClick={() => setStep(1)}>
-                Atrás
-              </Button>
-              <Button variant="primary" className="w-100" onClick={() => setStep(3)}>
-                Siguiente
-              </Button>
-            </>
-          )}
-
-          {step === 3 && (
-            <>
-              <Form.Group className="mb-3">
-                <Form.Label>Pregunta de recuperación</Form.Label>
-                <Form.Select name="pregunta_recuperacion" onChange={handleChange} required>
-                  <option value="">Seleccione una pregunta</option>
-                  <option value="1">¿Cuál es el nombre de tu primera mascota?</option>
-                  <option value="2">¿En qué ciudad naciste?</option>
-                  <option value="3">¿Cuál es tu comida favorita?</option>
-                </Form.Select>
-              </Form.Group>
-
-              <Form.Group className="mb-3">
-                <Form.Label>Respuesta de recuperación</Form.Label>
-                <Form.Control type="text" name="respuesta_recuperacion" onChange={handleChange} required />
-              </Form.Group>
-
-              <Button variant="secondary" className="w-100 mb-2" onClick={() => setStep(2)}>
-                Atrás
-              </Button>
-              <Button variant="success" type="submit" className="w-100">
+            )}
+            {step === 3 && (
+              <Button variant="success" type="submit">
                 Registrarse
               </Button>
-            </>
-          )}
+            )}
+          </div>
         </Form>
+
+        {/* Modal de confirmación */}
+        <Modal show={showModal} onHide={() => setShowModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Registro Exitoso</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>¡Tu cuenta ha sido creada exitosamente!</Modal.Body>
+          <Modal.Footer>
+            <Button variant="success" onClick={() => { setShowModal(false); navigate("/login"); }}>
+              Iniciar Sesión
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </Container>
     </div>
   );
