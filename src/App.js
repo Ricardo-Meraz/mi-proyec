@@ -18,8 +18,13 @@ import HistoriaAntecedentes from "./screens/Historia-Antecedentes/Historia-Antec
 import EditarProductos from "./screens/AdminProductos/EditarProductos";
 import AdmUsuarios from "./screens/AdminUsuarios/AdmUsuarios";
 import AdmQuienesSomos from "./screens/AdminQuines-Somos/AdmQuienes-Somos";
-import EditarQuienesSomos from "./screens/AdminQuines-Somos/EditarQuienes-Somos"; // <-- Agrega esta línea
+import EditarQuienesSomos from "./screens/AdminQuines-Somos/EditarQuienes-Somos"; 
 import { UserProvider } from "./screens/UserContext/UserContext";
+import AdminPoliticas from "./screens/AdmPoliticas/AdminPoliticas";
+import Ubicacion from "./screens/Ubicacion/Ubicacion";
+import RecuperarContraseña from "./screens/RecuperarContraseña/RecuperarContraseña";
+import Perfil from "./screens/Perfil/Perfil";
+import EditarPerfil from "./screens/Perfil/EditarPerfil";
 
 const App = () => {
   return (
@@ -43,6 +48,11 @@ const App = () => {
           <Route path="/admin-usuarios" element={<AdmUsuarios />} />
           <Route path="/admin/quienes-somos" element={<AdmQuienesSomos />} />
           <Route path="/editar-quienes-somos/:section/:id" element={<EditarQuienesSomos />} />
+          <Route path="/admin-politicas" element={<AdminPoliticas />} />
+          <Route path="/ubicacion" element={<Ubicacion />} />
+          <Route path="/recuperar-contraseña" element={<RecuperarContraseña />} />
+          <Route path="/perfil" element={<Perfil />} />
+          <Route path="/EditarPerfil" element={<EditarPerfil />} />
         </Routes>
         <Footer />
       </Router>

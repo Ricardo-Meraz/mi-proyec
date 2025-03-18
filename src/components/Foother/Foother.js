@@ -48,7 +48,7 @@ const Footer = () => {
                         <ul className="list-unstyled" style={{ fontSize: "14px" }}>
                             <li><Link to="/Contactos" className="text-light text-decoration-none">Contactanos</Link></li>
                             <li><Link to="/preguntas-frecuentes" className="text-light text-decoration-none">Preguntas Frecuentes</Link></li>
-                            <li><Link to="/sucursales" className="text-light text-decoration-none">Sucursales</Link></li>
+                            <li><Link to="/ubicacion" className="text-light text-decoration-none">Ubicacion</Link></li>
                         </ul>
                     </Col>
                     <Col md={4} className="text-center">
