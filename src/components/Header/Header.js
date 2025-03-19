@@ -6,6 +6,7 @@ import { FaUser, FaBars, FaBoxOpen, FaSignOutAlt, FaCogs } from "react-icons/fa"
 import Sidebar from "../Menu/Menu";
 import logo from "./logo.jpg";
 import { UserContext } from "../../screens/UserContext/UserContext";  // Ajusta la ruta si difiere
+import { FaComputer } from "react-icons/fa6";
 
 const Header = () => {
     const { user, setUser } = useContext(UserContext);
@@ -125,6 +126,12 @@ const Header = () => {
                                 <span className="text-white fw-bold me-3">
                                     Bienvenido, {user.nombre}
                                 </span>
+                                <Button
+                                    variant="success"
+                                    onClick={() => navigate("/control-iot")}
+                                    className="me-3">
+                                    <FaComputer className="me-1" /> Control IoT
+                                </Button>
 
                                 {/* Botón de perfil con ícono, visible si user está logeado */}
                                 <Button
