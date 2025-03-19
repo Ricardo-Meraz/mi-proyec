@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import ProductCard from "./cartproductos";
-import { Container } from "react-bootstrap";
+import { Container, Carousel, Row, Col } from "react-bootstrap";
 
 const ProductList = () => {
   const [productos, setProductos] = useState([]);
@@ -10,7 +10,7 @@ const ProductList = () => {
 
   useEffect(() => {
     axios
-      .get("https://servidor-bbkq.vercel.app/Productos") // ✅ URL de la API
+      .get("https://servidor-bbkq.vercel.app/Productos")
       .then((response) => {
         console.log("Productos recibidos:", response.data);
         setProductos(response.data.slice(0, 8)); // Limita a 8 productos
@@ -35,55 +35,73 @@ const ProductList = () => {
     return <p className="text-center">No hay productos disponibles.</p>;
   }
 
+  // Función para dividir el arreglo en grupos (chunks) de tamaño n
+  const chunkArray = (arr, chunkSize) => {
+    const chunks = [];
+    for (let i = 0; i < arr.length; i += chunkSize) {
+      chunks.push(arr.slice(i, i + chunkSize));
+    }
+    return chunks;
+  };
+
+  // Mostrar 4 productos por slide
+  const productChunks = chunkArray(productos, 4);
+
   return (
     <Container className="mt-4 text-center">
+
+      {/* Estilos para desplazar las flechas fuera de los recuadros */}
+      <style>
+        {`
+          .my-carousel .carousel-control-prev,
+          .my-carousel .carousel-control-next {
+            width: 5%; /* Ajusta el área clicable de la flecha */
+          }
+          .my-carousel .carousel-control-prev {
+            left: -3rem; /* Desplaza flecha izquierda */
+          }
+          .my-carousel .carousel-control-next {
+            right: -3rem; /* Desplaza flecha derecha */
+          }
+        `}
+      </style>
+
       <p className="text-muted fs-5">Explora nuestros productos</p>
-
-      <div
-        style={{
-          display: "flex",
-          overflowX: "auto",
-          whiteSpace: "nowrap",
-          gap: "15px",
-          paddingBottom: "15px",
-          scrollSnapType: "x mandatory",
-          scrollbarWidth: "none", // Oculta scrollbar en Firefox
-          msOverflowStyle: "none", // Oculta scrollbar en IE/Edge
-        }}
+      <Carousel
+        className="my-carousel"
+        // Flechas grandes y negras
+        prevIcon={<span style={{ fontSize: "3rem", color: "black", fontWeight: "bold" }}>‹</span>}
+        nextIcon={<span style={{ fontSize: "3rem", color: "black", fontWeight: "bold" }}>›</span>}
       >
-        {/* Oculta scrollbar en Chrome y Safari */}
-        <style>
-          {`
-            div::-webkit-scrollbar {
-              display: none;
-            }
-          `}
-        </style>
-
-        {productos.map((producto) => (
-          <div
-            key={producto._id}
-            style={{
-              flex: "0 0 auto",
-              width: "260px",
-              borderRadius: "12px",
-              boxShadow: "0px 4px 10px rgba(0,0,0,0.1)",
-              backgroundColor: "white",
-              padding: "10px",
-              transition: "transform 0.3s ease",
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-            onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
-          >
-            <ProductCard
-              id={producto._id}
-              image={producto.imagenUrl}
-              title={producto.nombre}
-              description={`Precio: $${producto.precio}`}
-            />
-          </div>
+        {productChunks.map((chunk, index) => (
+          <Carousel.Item key={index}>
+            <Row className="justify-content-center">
+              {chunk.map((producto) => (
+                <Col key={producto._id} xs={12} sm={6} md={3} className="mb-3">
+                  <div
+                    style={{
+                      borderRadius: "12px",
+                      boxShadow: "0px 4px 10px rgba(0,0,0,0.1)",
+                      backgroundColor: "white",
+                      padding: "10px",
+                      transition: "transform 0.3s ease",
+                    }}
+                    onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+                    onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                  >
+                    <ProductCard
+                      id={producto._id}
+                      image={producto.imagenUrl}
+                      title={producto.nombre}
+                      description={`Precio: $${producto.precio}`}
+                    />
+                  </div>
+                </Col>
+              ))}
+            </Row>
+          </Carousel.Item>
         ))}
-      </div>
+      </Carousel>
     </Container>
   );
 };
