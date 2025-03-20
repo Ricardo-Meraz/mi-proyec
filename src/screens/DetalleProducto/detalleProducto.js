@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Container, Card, Breadcrumb } from "react-bootstrap";
+import { Container, Card, Breadcrumb, Button } from "react-bootstrap";
+import { UserContext } from "../UserContext/UserContext";
 
-// Definir la URL base de la API
 const API_BASE_URL = process.env.REACT_APP_API_URL || "https://servidor-bbkq.vercel.app";
 
 const DetalleProducto = () => {
   const { id } = useParams();
-  const navigate = useNavigate(); // Hook para redirección
+  const navigate = useNavigate();
+  const { user } = useContext(UserContext);
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,6 +27,26 @@ const DetalleProducto = () => {
       });
   }, [id]);
 
+  const handleComprar = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${API_BASE_URL}/dispositivos/estado?email=${user.email}`);
+      if (response.data) {
+        navigate("/control-iot");
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        navigate("/vincular-iot");
+      } else {
+        console.error("Error al verificar el dispositivo:", error);
+      }
+    }
+  };
+
   if (loading) {
     return <p className="text-center">Cargando detalles del producto...</p>;
   }
@@ -40,7 +61,6 @@ const DetalleProducto = () => {
 
   return (
     <Container className="mt-4">
-      {/* Migas de Pan (sin la categoría) */}
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
           Home
@@ -73,6 +93,11 @@ const DetalleProducto = () => {
           <Card.Text>
             <strong>Stock disponible:</strong> {producto.stock}
           </Card.Text>
+          {producto.nombre.toLowerCase().includes("invernadero inteligente") && (
+            <Button variant="primary" onClick={handleComprar}>
+              Comprar
+            </Button>
+          )}
         </Card.Body>
       </Card>
     </Container>

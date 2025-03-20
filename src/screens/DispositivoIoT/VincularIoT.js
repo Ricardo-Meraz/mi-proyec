@@ -1,44 +1,53 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { UserContext } from '../UserContext/UserContext';
 
-const API_URL = "https://servidor-bbkq.vercel.app/dispositivos/vincular";
+const API_URL = "https://servidor-bbkq.vercel.app/dispositivos";
 
 const VincularIoT = () => {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const [nombre, setNombre] = useState('');
-  const [mac, setMac] = useState('');
+  const [ip, setIp] = useState('');
   const [mensaje, setMensaje] = useState('');
 
+  useEffect(() => {
+    if (!user) return;
+    
+    axios.get(`${API_URL}/estado?email=${user.email}`)
+      .then(response => {
+        if (response.data) {
+          navigate('/control-iot'); // Si ya está vinculado, redirigir
+        }
+      })
+      .catch(error => {
+        if (error.response && error.response.status !== 404) {
+          setMensaje('Error al verificar el dispositivo');
+        }
+      });
+  }, [user, navigate]);
+
   const handleVincular = async () => {
-    if (!nombre || !mac) {
+    if (!nombre || !ip) {
       setMensaje('Todos los campos son obligatorios');
       return;
     }
 
     try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Si usas autenticación con token, inclúyelo:
-          Authorization: `Bearer ${user.token}`,
-        },
-        // Se envía también el email del usuario (único)
-        body: JSON.stringify({ nombre, mac, email: user.email }),
+      const response = await axios.post(`${API_URL}/vincular`, {
+        nombre,
+        ip,
+        email: user.email,
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Una vez vinculado, redirige a la vista de control
+      
+      if (response.status === 200) {
         navigate('/control-iot');
       } else {
-        setMensaje(data.mensaje);
+        setMensaje(response.data.mensaje || 'Error al vincular dispositivo');
       }
     } catch (error) {
-      setMensaje('Error al conectar con el servidor');
+      setMensaje(error.response?.data?.mensaje || 'Error al conectar con el servidor');
     }
   };
 
@@ -55,10 +64,10 @@ const VincularIoT = () => {
         />
         <input
           type="text"
-          placeholder="Dirección MAC"
+          placeholder="Dirección IP"
           className="w-full p-2 mb-2 border rounded"
-          value={mac}
-          onChange={(e) => setMac(e.target.value)}
+          value={ip}
+          onChange={(e) => setIp(e.target.value)}
         />
         {mensaje && <p className="text-red-500 text-sm mb-2">{mensaje}</p>}
         <button

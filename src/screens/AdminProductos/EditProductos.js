@@ -44,7 +44,7 @@ const EditProductos = () => {
 
   // 🔥 Agregar un nuevo producto
   const agregarProducto = () => {
-    navigate("/agregar-producto"); // ✅ Redirige a la página para agregar productos
+    navigate("/agg-productos"); // ✅ Redirige a la página para agregar productos
   };
 
   return (

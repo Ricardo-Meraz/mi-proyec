@@ -1,46 +1,81 @@
 import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
-import VincularIoT from './VincularIoT';
-import ControlIoT from './ControlIoT';
 import { UserContext } from '../UserContext/UserContext';
 
-const IoTManager = () => {
+const API_URL = 'https://servidor-bbkq.vercel.app/dispositivos/estado';
+
+const ControlIoT = () => {
   const { user } = useContext(UserContext);
-  const [isLinked, setIsLinked] = useState(null); // null: cargando, true: vinculado, false: no vinculado
+  const [dispositivo, setDispositivo] = useState(null);
   const [mensaje, setMensaje] = useState('');
 
   useEffect(() => {
     if (!user) return;
-    // Consulta a la API para ver si existe un dispositivo vinculado
-    axios
-      .get(`https://servidor-bbkq.vercel.app/dispositivos/estado?email=${user.email}`)
-      .then((response) => {
-        // Si se obtiene un dispositivo, se considera vinculado
-        setIsLinked(true);
+    
+    axios.get(`${API_URL}?email=${user.email}`)
+      .then(response => {
+        setDispositivo(response.data);
       })
-      .catch((error) => {
-        // Si la respuesta es 404, no hay dispositivo vinculado
-        if (error.response && error.response.status === 404) {
-          setIsLinked(false);
-        } else {
-          setMensaje('Error al verificar dispositivo: ' + error.message);
-        }
+      .catch(error => {
+        setMensaje('Error al cargar datos del dispositivo');
+        console.error(error);
       });
   }, [user]);
 
-  if (!user) {
-    return <p>No has iniciado sesión.</p>;
+  const enviarComando = (comando) => {
+    if (!dispositivo) return;
+    
+    axios.post('https://servidor-bbkq.vercel.app/dispositivos/comando', {
+      email: user.email,
+      comando
+    })
+    .then(() => {
+      setMensaje(`Comando enviado: ${comando}`);
+    })
+    .catch(error => {
+      setMensaje('Error al enviar el comando');
+      console.error(error);
+    });
+  };
+
+  if (!dispositivo) {
+    return <p>Cargando datos del dispositivo...</p>;
   }
 
-  if (isLinked === null) {
-    return <p>Cargando...</p>;
-  }
-
-  if (mensaje) {
-    return <p>{mensaje}</p>;
-  }
-
-  return <div>{isLinked ? <ControlIoT /> : <VincularIoT />}</div>;
+  return (
+    <div className="container">
+      <h2>Control del Dispositivo IoT</h2>
+      <p>{mensaje}</p>
+      <div>
+        <h3>Modo de Operación</h3>
+        <p>Estado: {dispositivo.automatico ? 'Automático' : 'Manual'}</p>
+        <button onClick={() => enviarComando(dispositivo.automatico ? 'modo_manual' : 'modo_auto')}>
+          Cambiar Modo
+        </button>
+      </div>
+      <div>
+        <h3>Ventilador</h3>
+        <p>Estado: {dispositivo.ventilador ? 'Encendido' : 'Apagado'}</p>
+        <button onClick={() => enviarComando(dispositivo.ventilador ? 'ventilador_off' : 'ventilador_on')}>
+          Cambiar
+        </button>
+      </div>
+      <div>
+        <h3>Bomba</h3>
+        <p>Estado: {dispositivo.bomba ? 'Encendida' : 'Apagada'}</p>
+        <button onClick={() => enviarComando(dispositivo.bomba ? 'bomba_off' : 'bomba_on')}>
+          Cambiar
+        </button>
+      </div>
+      <div>
+        <h3>Foco</h3>
+        <p>Estado: {dispositivo.foco ? 'Encendido' : 'Apagado'}</p>
+        <button onClick={() => enviarComando(dispositivo.foco ? 'foco_off' : 'foco_on')}>
+          Cambiar
+        </button>
+      </div>
+    </div>
+  );
 };
 
-export default IoTManager;
+export default ControlIoT;

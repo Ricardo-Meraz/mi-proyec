@@ -27,6 +27,8 @@ import Perfil from "./screens/Perfil/Perfil";
 import EditarPerfil from "./screens/Perfil/EditarPerfil";
 import IoTManager from "./screens/DispositivoIoT/IoTManager";
 import ControlIoT from "./screens/DispositivoIoT/ControlIoT";
+import AggProductos from "./screens/AdminProductos/AggProductos";
+import VincularIoT from "./screens/DispositivoIoT/VincularIoT";
 
 const App = () => {
   return (
@@ -57,6 +59,8 @@ const App = () => {
           <Route path="/EditarPerfil" element={<EditarPerfil />} />
           <Route path="/control" element={<IoTManager />} />
           <Route path="/control-iot" element={<ControlIoT />} />
+          <Route path="/agg-productos" element={<AggProductos />} />
+          <Route path="/vincular-iot" element={<VincularIoT />} />
         </Routes>
         <Footer />
       </Router>
