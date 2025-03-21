@@ -29,6 +29,7 @@ import IoTManager from "./screens/DispositivoIoT/IoTManager";
 import ControlIoT from "./screens/DispositivoIoT/ControlIoT";
 import AggProductos from "./screens/AdminProductos/AggProductos";
 import VincularIoT from "./screens/DispositivoIoT/VincularIoT";
+import IoTDashboard from "./screens/IotDashboard/IoTDashboard";
 
 const App = () => {
   return (
@@ -61,6 +62,7 @@ const App = () => {
           <Route path="/control-iot" element={<ControlIoT />} />
           <Route path="/agg-productos" element={<AggProductos />} />
           <Route path="/vincular-iot" element={<VincularIoT />} />
+          <Route path="/iot-dashboard" element={<IoTDashboard />} />
         </Routes>
         <Footer />
       </Router>

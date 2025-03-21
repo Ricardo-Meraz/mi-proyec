@@ -128,7 +128,7 @@ const Header = () => {
                                 </span>
                                 <Button
                                     variant="success"
-                                    onClick={() => navigate("/control-iot")}
+                                    onClick={() => navigate("/iot-dashboard")}
                                     className="me-3">
                                     <FaComputer className="me-1" /> Control IoT
                                 </Button>
