@@ -123,12 +123,11 @@ const Registro = () => {
       password: formData.password,
       sexo: formData.sexo,
       edad: formData.edad,
-      pregunta_recuperacion: formData.pregunta_recuperacion, // se envía el ID
+      pregunta_recuperacion: formData.pregunta_recuperacion, // ID de la pregunta seleccionada
       respuesta_recuperacion: formData.respuesta_recuperacion,
     };
 
     try {
-      // Usamos el endpoint /usuarios/registro según tu backend
       const response = await axios.post(`${API_URL}/usuarios/registro`, datosAEnviar);
       if (response.status === 201) {
         setShowModal(true);
@@ -221,9 +220,10 @@ const Registro = () => {
   };
 
   return (
+    // Contenedor con el degradado especificado
     <div
       style={{
-        background: "linear-gradient(135deg, #043200, #0b4a1b)",
+        background: "linear-gradient(135deg, #043200 0%, rgb(233, 251, 237) 60%, #0a3b17 100%)",
         minHeight: "100vh",
         padding: "20px"
       }}
