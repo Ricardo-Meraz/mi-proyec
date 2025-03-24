@@ -1,270 +1,272 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Container, Form, Button, Alert } from 'react-bootstrap';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../../screens/UserContext/UserContext';
+import React, { useState, useEffect } from "react";
+import { Container, Form, Button, Modal, Alert } from "react-bootstrap";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const EditarPerfil = () => {
-  const { user, setUser } = useContext(UserContext);
+const Registro = () => {
   const navigate = useNavigate();
-  const API_URL = "https://servidor-bbkq.vercel.app";
+  const API_URL = "https://servidor-bbkq.vercel.app"; // Ajusta tu URL si es distinto
 
-  // Estado para datos básicos del perfil y pregunta de recuperación existente
-  const [perfil, setPerfil] = useState({
-    nombre: '',
-    apellidoP: '',
-    apellidoM: '',
-    telefono: '',
-    email: '',
-    sexo: '',
-    edad: '',
-    pregunta_recuperacion: {} // se espera que tenga, por ejemplo, { pre_id: { _id, pregunta }, respuesta: "..." }
-  });
+  const initialFormData = {
+    nombre: "",
+    apellidoP: "",
+    apellidoM: "",
+    telefono: "",
+    email: "",
+    password: "",
+    confirmarContraseña: "",
+    sexo: "",
+    edad: "",
+    pregunta_recuperacion: "",
+    respuesta_recuperacion: "",
+  };
 
-  // Estados para la edición de contraseña
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-
-  // Estados para editar la pregunta de recuperación: dropdown para seleccionar y campo para la respuesta
+  const [formData, setFormData] = useState(initialFormData);
   const [preguntas, setPreguntas] = useState([]);
-  const [selectedPregunta, setSelectedPregunta] = useState('');
-  const [newRecoveryAnswer, setNewRecoveryAnswer] = useState('');
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [step, setStep] = useState(1);
 
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-
-  // Cargar datos del perfil actual
-  useEffect(() => {
-    if (!user) return;
-    const fetchPerfil = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/usuarios/${user._id}`);
-        setPerfil(response.data);
-        // Si ya tiene una pregunta de recuperación asignada, la ponemos en el dropdown
-        if (response.data.pregunta_recuperacion && response.data.pregunta_recuperacion.pre_id) {
-          setSelectedPregunta(response.data.pregunta_recuperacion.pre_id._id);
-        }
-      } catch (err) {
-        console.error(err);
-        setError('Error al cargar los datos del perfil.');
-      }
-    };
-    fetchPerfil();
-  }, [user]);
-
-  // Cargar preguntas de recuperación disponibles
+  // Cargar preguntas de recuperación disponibles desde el API
   useEffect(() => {
     const fetchPreguntas = async () => {
       try {
         const response = await axios.get(`${API_URL}/pregunta-recuperacion/ver`);
         setPreguntas(response.data);
-      } catch (err) {
-        console.error("Error al cargar las preguntas de recuperación:", err);
+      } catch (error) {
+        console.error("Error al obtener preguntas:", error);
       }
     };
     fetchPreguntas();
-  }, []);
+  }, [API_URL]);
 
-  // Manejo de cambios en los datos básicos
+  // Manejo de inputs y cambios de estado
   const handleChange = (e) => {
-    setPerfil({
-      ...perfil,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Envío del formulario para actualizar el perfil
+  const handleSelectPregunta = (e) => {
+    setFormData({ ...formData, pregunta_recuperacion: e.target.value });
+  };
+
+  // Validación por paso
+  const validateStep = () => {
+    if (step === 1) {
+      // Datos personales
+      if (!formData.nombre || !formData.apellidoP || !formData.telefono || !formData.email) {
+        setError("Todos los campos del paso 1 son obligatorios.");
+        return false;
+      }
+      if (!formData.email.includes("@")) {
+        setError("Ingrese un correo electrónico válido.");
+        return false;
+      }
+      if (!/^\d{10}$/.test(formData.telefono)) {
+        setError("El teléfono debe tener 10 dígitos.");
+        return false;
+      }
+    } else if (step === 2) {
+      // Seguridad
+      if (!formData.password || !formData.confirmarContraseña) {
+        setError("Ambos campos de contraseña son obligatorios.");
+        return false;
+      }
+      if (formData.password.length < 8) {
+        setError("La contraseña debe tener al menos 8 caracteres.");
+        return false;
+      }
+      // Validar que la contraseña tenga al menos un carácter especial
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
+        setError("La contraseña debe contener al menos un carácter especial.");
+        return false;
+      }
+      if (formData.password !== formData.confirmarContraseña) {
+        setError("Las contraseñas no coinciden.");
+        return false;
+      }
+    } else if (step === 3) {
+      // Información adicional y recuperación
+      if (!formData.sexo || !formData.edad || !formData.pregunta_recuperacion || !formData.respuesta_recuperacion) {
+        setError("Todos los campos del paso 3 son obligatorios.");
+        return false;
+      }
+    }
+    setError(null);
+    return true;
+  };
+
+  // Navegación entre pasos
+  const handleNext = (e) => {
+    e.preventDefault();
+    if (validateStep()) {
+      setStep(step + 1);
+    }
+  };
+
+  const handlePrev = (e) => {
+    e.preventDefault();
+    setError(null);
+    setStep(step - 1);
+  };
+
+  // Envío del formulario (último paso)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    if (!validateStep()) return;
 
-    // Si se ingresó nueva contraseña, validarla
-    if ((newPassword || confirmPassword) && newPassword !== confirmPassword) {
-      setError("Las contraseñas no coinciden.");
-      return;
-    }
-
-    // Armar el objeto de actualización
-    const updateData = {
-      ...perfil
+    const datosAEnviar = {
+      nombre: formData.nombre,
+      apellidoP: formData.apellidoP,
+      apellidoM: formData.apellidoM,
+      telefono: formData.telefono,
+      email: formData.email,
+      password: formData.password,
+      sexo: formData.sexo,
+      edad: formData.edad,
+      pregunta_recuperacion: formData.pregunta_recuperacion, // se envía el ID
+      respuesta_recuperacion: formData.respuesta_recuperacion,
     };
 
-    if (newPassword) {
-      updateData.password = newPassword;
-    }
-
-    // Si se ha seleccionado una pregunta y se ingresa respuesta, actualizar la recuperación
-    if (selectedPregunta && newRecoveryAnswer) {
-      updateData.pregunta_recuperacion = {
-        pre_id: selectedPregunta,
-        respuesta: newRecoveryAnswer
-      };
-    }
-
     try {
-      const response = await axios.put(`${API_URL}/usuarios/${user._id}`, updateData);
-      setSuccess(response.data.mensaje || "Perfil actualizado exitosamente.");
-      // Actualizar el contexto (opcional)
-      setUser(response.data.usuario || { ...user, ...updateData });
-      setTimeout(() => {
-        navigate('/perfil');
-      }, 2000);
-    } catch (err) {
-      console.error(err);
-      setError("Error al actualizar el perfil.");
+      // Usamos el endpoint /usuarios/registro según tu backend
+      const response = await axios.post(`${API_URL}/usuarios/registro`, datosAEnviar);
+      if (response.status === 201) {
+        setShowModal(true);
+        setFormData(initialFormData);
+      }
+    } catch (error) {
+      setError(error.response?.data?.mensaje || "Error al registrar usuario.");
     }
   };
 
-  if (!user) {
-    return (
-      <Container className="mt-4">
-        <h4>No has iniciado sesión.</h4>
-      </Container>
-    );
-  }
-
-  if (!perfil) {
-    return (
-      <Container className="mt-4">
-        <h4>Cargando perfil...</h4>
-      </Container>
-    );
-  }
+  // Renderizado de cada paso
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return (
+          <>
+            <h4 className="mb-3">Datos Personales</h4>
+            <Form.Group className="mb-3">
+              <Form.Label>Nombre</Form.Label>
+              <Form.Control type="text" name="nombre" value={formData.nombre} onChange={handleChange} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Apellido Paterno</Form.Label>
+              <Form.Control type="text" name="apellidoP" value={formData.apellidoP} onChange={handleChange} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Apellido Materno</Form.Label>
+              <Form.Control type="text" name="apellidoM" value={formData.apellidoM} onChange={handleChange} />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Teléfono</Form.Label>
+              <Form.Control type="tel" name="telefono" value={formData.telefono} onChange={handleChange} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} required />
+            </Form.Group>
+          </>
+        );
+      case 2:
+        return (
+          <>
+            <h4 className="mb-3">Seguridad</h4>
+            <Form.Group className="mb-3">
+              <Form.Label>Contraseña</Form.Label>
+              <Form.Control type="password" name="password" placeholder="Ingresa la contraseña" value={formData.password} onChange={handleChange} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Confirmar Contraseña</Form.Label>
+              <Form.Control type="password" name="confirmarContraseña" placeholder="Confirma la contraseña" value={formData.confirmarContraseña} onChange={handleChange} required />
+            </Form.Group>
+          </>
+        );
+      case 3:
+        return (
+          <>
+            <h4 className="mb-3">Información Adicional</h4>
+            <Form.Group className="mb-3">
+              <Form.Label>Sexo</Form.Label>
+              <Form.Select name="sexo" value={formData.sexo} onChange={handleChange} required>
+                <option value="">Seleccione una opción</option>
+                <option value="masculino">Masculino</option>
+                <option value="femenino">Femenino</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Edad</Form.Label>
+              <Form.Control type="number" name="edad" value={formData.edad} onChange={handleChange} required />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Pregunta de recuperación</Form.Label>
+              <Form.Select name="pregunta_recuperacion" value={formData.pregunta_recuperacion} onChange={handleSelectPregunta} required>
+                <option value="">Seleccione una pregunta</option>
+                {preguntas.map((pregunta) => (
+                  <option key={pregunta._id} value={pregunta._id}>
+                    {pregunta.pregunta}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Respuesta de recuperación</Form.Label>
+              <Form.Control type="text" name="respuesta_recuperacion" value={formData.respuesta_recuperacion} onChange={handleChange} required />
+            </Form.Group>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <Container style={{ maxWidth: "600px" }} className="mt-4">
-      <h2 className="text-center mb-4">Editar Perfil</h2>
-      {error && <Alert variant="danger">{error}</Alert>}
-      {success && <Alert variant="success">{success}</Alert>}
-      <Form onSubmit={handleSubmit}>
-        {/* Datos Personales */}
-        <Form.Group className="mb-3" controlId="formNombre">
-          <Form.Label>Nombre</Form.Label>
-          <Form.Control
-            type="text"
-            name="nombre"
-            value={perfil.nombre}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="formApellidoP">
-          <Form.Label>Apellido Paterno</Form.Label>
-          <Form.Control
-            type="text"
-            name="apellidoP"
-            value={perfil.apellidoP}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="formApellidoM">
-          <Form.Label>Apellido Materno</Form.Label>
-          <Form.Control
-            type="text"
-            name="apellidoM"
-            value={perfil.apellidoM}
-            onChange={handleChange}
-          />
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="formTelefono">
-          <Form.Label>Teléfono</Form.Label>
-          <Form.Control
-            type="text"
-            name="telefono"
-            value={perfil.telefono}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="formEmail">
-          <Form.Label>Email</Form.Label>
-          <Form.Control
-            type="email"
-            name="email"
-            value={perfil.email}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="formSexo">
-          <Form.Label>Sexo</Form.Label>
-          <Form.Select
-            name="sexo"
-            value={perfil.sexo}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Selecciona</option>
-            <option value="masculino">Masculino</option>
-            <option value="femenino">Femenino</option>
-          </Form.Select>
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="formEdad">
-          <Form.Label>Edad</Form.Label>
-          <Form.Control
-            type="number"
-            name="edad"
-            value={perfil.edad}
-            onChange={handleChange}
-            required
-          />
-        </Form.Group>
+    <div
+      style={{
+        background: "linear-gradient(135deg, #043200, #0b4a1b)",
+        minHeight: "100vh",
+        padding: "20px"
+      }}
+    >
+      <Container className="p-4 bg-white shadow-lg rounded" style={{ maxWidth: "500px", margin: "0 auto" }}>
+        <h2 className="text-center fw-bold text-success mb-3">Regístrate</h2>
+        {error && <Alert variant="danger" className="text-center">{error}</Alert>}
+        <Form onSubmit={step === 3 ? handleSubmit : handleNext}>
+          {renderStep()}
+          <div className="d-flex justify-content-between">
+            {step > 1 && (
+              <Button variant="secondary" onClick={handlePrev}>
+                Anterior
+              </Button>
+            )}
+            {step < 3 && (
+              <Button variant="primary" type="submit">
+                Siguiente
+              </Button>
+            )}
+            {step === 3 && (
+              <Button variant="success" type="submit">
+                Registrarse
+              </Button>
+            )}
+          </div>
+        </Form>
 
-        {/* Edición de contraseña */}
-        <Form.Group className="mb-3" controlId="formNuevaContraseña">
-          <Form.Label>Nueva Contraseña</Form.Label>
-          <Form.Control
-            type="password"
-            placeholder="Ingresa la nueva contraseña"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="formConfirmarContraseña">
-          <Form.Label>Confirmar Nueva Contraseña</Form.Label>
-          <Form.Control
-            type="password"
-            placeholder="Confirma la nueva contraseña"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-        </Form.Group>
-
-        {/* Edición de pregunta de recuperación */}
-        <Form.Group className="mb-3" controlId="formPreguntaRecuperacion">
-          <Form.Label>Pregunta de Recuperación</Form.Label>
-          <Form.Select
-            name="pregunta_recuperacion"
-            value={selectedPregunta}
-            onChange={(e) => setSelectedPregunta(e.target.value)}
-            required
-          >
-            <option value="">Seleccione una pregunta</option>
-            {preguntas.map((p) => (
-              <option key={p._id} value={p._id}>
-                {p.pregunta}
-              </option>
-            ))}
-          </Form.Select>
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="formRespuestaRecuperacion">
-          <Form.Label>Respuesta de Recuperación</Form.Label>
-          <Form.Control
-            type="text"
-            placeholder="Ingresa la nueva respuesta de recuperación"
-            value={newRecoveryAnswer}
-            onChange={(e) => setNewRecoveryAnswer(e.target.value)}
-            required
-          />
-        </Form.Group>
-
-        <Button variant="primary" type="submit" className="w-100">
-          Guardar Cambios
-        </Button>
-      </Form>
-    </Container>
+        {/* Modal de confirmación */}
+        <Modal show={showModal} onHide={() => setShowModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Registro Exitoso</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>¡Tu cuenta ha sido creada exitosamente!</Modal.Body>
+          <Modal.Footer>
+            <Button variant="success" onClick={() => { setShowModal(false); navigate("/login"); }}>
+              Iniciar Sesión
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </Container>
+    </div>
   );
 };
 
-export default EditarPerfil;
+export default Registro;
