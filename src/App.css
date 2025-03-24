@@ -1,3 +1,22 @@
+/* Aseguramos que html, body, #root y el contenedor principal tengan altura completa */
+html, body, #root, .app-container {
+  height: 100%;
+  margin: 0;
+}
+
+/* Contenedor principal de la aplicación */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Contenedor para el contenido que se expande para empujar el footer hacia abajo */
+.content-wrap {
+  flex: 1;
+}
+
+/* Tus estilos actuales de Create React App */
 .App {
   text-align: center;
 }

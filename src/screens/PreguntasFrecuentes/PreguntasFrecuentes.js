@@ -1,73 +1,107 @@
-import React from "react";
-import { Container, Accordion } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Container, Form, Button, Alert, Accordion } from "react-bootstrap";
+import axios from "axios";
 
 const PreguntasFrecuentes = () => {
+  const [preguntaInput, setPreguntaInput] = useState("");
+  const [faqs, setFaqs] = useState([]);
+  const [mensaje, setMensaje] = useState("");
+
+  const fetchFaqs = async () => {
+    try {
+      const response = await axios.get("https://servidor-bbkq.vercel.app/faq");
+      setFaqs(response.data);
+    } catch (error) {
+      setMensaje("Error al cargar las FAQs.");
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchFaqs();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!preguntaInput.trim()) {
+      setMensaje("La pregunta es obligatoria.");
+      return;
+    }
+    try {
+      await axios.post("https://servidor-bbkq.vercel.app/faq", {
+        pregunta: preguntaInput,
+        respuesta: ""
+      });
+      setMensaje("Pregunta enviada correctamente.");
+      setPreguntaInput("");
+      fetchFaqs();
+    } catch (error) {
+      setMensaje("Error al enviar la pregunta.");
+      console.error(error);
+    }
+  };
+
   return (
-    <Container className="mt-5">
-      <h2 className="text-center mb-4">Preguntas Frecuentes</h2>
-      <Accordion>
-        <Accordion.Item eventKey="0">
-          <Accordion.Header>¿Cómo puedo realizar una compra?</Accordion.Header>
-          <Accordion.Body>
-            Puedes realizar una compra seleccionando los productos y agregándolos al carrito. Luego, sigue las instrucciones para el pago y envío.
-          </Accordion.Body>
-        </Accordion.Item>
-        <Accordion.Item eventKey="1">
-          <Accordion.Header>¿Cuáles son los métodos de pago aceptados?</Accordion.Header>
-          <Accordion.Body>
-            Aceptamos pagos con tarjeta de crédito, débito y transferencias bancarias.
-          </Accordion.Body>
-        </Accordion.Item>
-        <Accordion.Item eventKey="2">
-          <Accordion.Header>¿Ofrecen envíos a todo el país?</Accordion.Header>
-          <Accordion.Body>
-            Sí, realizamos envíos a nivel nacional con diferentes opciones de entrega.
-          </Accordion.Body>
-        </Accordion.Item>
-        <Accordion.Item eventKey="3">
-          <Accordion.Header>¿Cuánto tiempo tarda el envío?</Accordion.Header>
-          <Accordion.Body>
-            El tiempo de entrega varía entre 2 a 5 días hábiles, dependiendo de la ubicación.
-          </Accordion.Body>
-        </Accordion.Item>
-        <Accordion.Item eventKey="4">
-          <Accordion.Header>¿Puedo cancelar mi pedido?</Accordion.Header>
-          <Accordion.Body>
-            Sí, puedes cancelar tu pedido antes de que haya sido enviado. Contáctanos lo antes posible.
-          </Accordion.Body>
-        </Accordion.Item>
-        <Accordion.Item eventKey="5">
-          <Accordion.Header>¿Cómo puedo hacer una devolución?</Accordion.Header>
-          <Accordion.Body>
-            Puedes solicitar una devolución dentro de los 30 días posteriores a la compra, siempre que el producto esté en su estado original.
-          </Accordion.Body>
-        </Accordion.Item>
-        <Accordion.Item eventKey="6">
-          <Accordion.Header>¿Los productos tienen garantía?</Accordion.Header>
-          <Accordion.Body>
-            Sí, ofrecemos garantía en todos nuestros productos. La duración varía según el producto.
-          </Accordion.Body>
-        </Accordion.Item>
-        <Accordion.Item eventKey="7">
-          <Accordion.Header>¿Cómo puedo rastrear mi pedido?</Accordion.Header>
-          <Accordion.Body>
-            Una vez enviado tu pedido, recibirás un número de seguimiento para rastrearlo en tiempo real.
-          </Accordion.Body>
-        </Accordion.Item>
-        <Accordion.Item eventKey="8">
-          <Accordion.Header>¿Puedo comprar al por mayor?</Accordion.Header>
-          <Accordion.Body>
-            Sí, ofrecemos precios especiales para compras al por mayor. Contáctanos para más información.
-          </Accordion.Body>
-        </Accordion.Item>
-        <Accordion.Item eventKey="9">
-          <Accordion.Header>¿Cómo puedo contactar al servicio de atención al cliente?</Accordion.Header>
-          <Accordion.Body>
-            Puedes contactarnos por correo electrónico, teléfono o WhatsApp. Estamos disponibles de lunes a viernes de 9:00 AM a 6:00 PM.
-          </Accordion.Body>
-        </Accordion.Item>
-      </Accordion>
-    </Container>
+    <div
+      style={{
+        background:
+          "linear-gradient(135deg, #043200 0%, rgb(233, 251, 237) 60%, #0a3b17 100%)",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column"
+      }}
+    >
+      {/* Contenedor principal: ocupa el espacio disponible */}
+      <Container className="mt-4 flex-grow-1">
+        <h2 className="text-center">Preguntas Frecuentes</h2>
+        {mensaje && <Alert variant="info">{mensaje}</Alert>}
+        <Form onSubmit={handleSubmit} className="mb-4">
+          <Form.Group controlId="pregunta">
+            <Form.Label>Haz tu pregunta</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Escribe tu pregunta..."
+              value={preguntaInput}
+              onChange={(e) => setPreguntaInput(e.target.value)}
+            />
+          </Form.Group>
+          <Button variant="primary" type="submit" className="mt-2">
+            Enviar Pregunta
+          </Button>
+        </Form>
+
+        <h4>Listado de Preguntas</h4>
+        {faqs.length > 0 ? (
+          <Accordion defaultActiveKey="0">
+            {faqs.map((faq, index) => (
+              <Accordion.Item eventKey={index.toString()} key={faq._id}>
+                <Accordion.Header>{faq.pregunta}</Accordion.Header>
+                <Accordion.Body>
+                  <strong>Respuesta:</strong>{" "}
+                  {faq.respuesta ? faq.respuesta : "Sin respuesta"}
+                </Accordion.Body>
+              </Accordion.Item>
+            ))}
+          </Accordion>
+        ) : (
+          <p>No hay preguntas registradas.</p>
+        )}
+      </Container>
+
+      {/* Footer pegado al final */}
+      <footer
+        className="text-center text-white py-3"
+        style={{
+          background: "linear-gradient(135deg, #043200, #0b4a1b)",
+          width: "100%"
+        }}
+      >
+        <h5 className="m-0">🌿 INVERNATECH</h5>
+        <p className="m-0">
+          Innovación y tecnología para la agricultura sostenible.
+        </p>
+      </footer>
+    </div>
   );
 };
 

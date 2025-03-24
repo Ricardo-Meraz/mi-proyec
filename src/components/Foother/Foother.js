@@ -63,9 +63,7 @@ const Footer = () => {
                             <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white">
                                 <FaInstagram size={20} />
                             </a>
-                            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-white">
-                                <FaLinkedin size={20} />
-                            </a>
+                    
                         </div>
                     </Col>
                 </Row>

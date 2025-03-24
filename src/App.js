@@ -30,42 +30,50 @@ import ControlIoT from "./screens/DispositivoIoT/ControlIoT";
 import AggProductos from "./screens/AdminProductos/AggProductos";
 import VincularIoT from "./screens/DispositivoIoT/VincularIoT";
 import IoTDashboard from "./screens/IotDashboard/IoTDashboard";
+import AdminContactanos from "./screens/AdminContactanos/AdminContactanos";
+import AdminFaq from "./screens/AdminFaqs/AdminFaq";
 
 const App = () => {
   return (
     <UserProvider>
-      <Router>
-        <Header />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/quienes-somos" element={<QuienesSomos />} />
-          <Route path="/contactos" element={<Contacto />} />
-          <Route path="/registro" element={<Registro />} />
-          <Route path="/preguntas-frecuentes" element={<PreguntasFrecuentes />} />
-          <Route path="/politicas" element={<Politicas />} />
-          <Route path="/upload" element={<CloudinaryUpload />} />
-          <Route path="/ProductosCat" element={<ProductosCat />} />
-          <Route path="/producto/:id" element={<DetalleProducto />} />
-          <Route path="/editar-productos" element={<EditProductos />} />
-          <Route path="/historia-antecedentes" element={<HistoriaAntecedentes />} />
-          <Route path="/editar-producto/:id" element={<EditarProductos />} />
-          <Route path="/admin-usuarios" element={<AdmUsuarios />} />
-          <Route path="/admin/quienes-somos" element={<AdmQuienesSomos />} />
-          <Route path="/editar-quienes-somos/:section/:id" element={<EditarQuienesSomos />} />
-          <Route path="/admin-politicas" element={<AdminPoliticas />} />
-          <Route path="/ubicacion" element={<Ubicacion />} />
-          <Route path="/recuperar-contraseña" element={<RecuperarContraseña />} />
-          <Route path="/perfil" element={<Perfil />} />
-          <Route path="/EditarPerfil" element={<EditarPerfil />} />
-          <Route path="/control" element={<IoTManager />} />
-          <Route path="/control-iot" element={<ControlIoT />} />
-          <Route path="/agg-productos" element={<AggProductos />} />
-          <Route path="/vincular-iot" element={<VincularIoT />} />
-          <Route path="/iot-dashboard" element={<IoTDashboard />} />
-        </Routes>
-        <Footer />
-      </Router>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <Router>
+          <Header />
+          <div style={{ flex: 1 }}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/quienes-somos" element={<QuienesSomos />} />
+              <Route path="/contactos" element={<Contacto />} />
+              <Route path="/registro" element={<Registro />} />
+              <Route path="/preguntas-frecuentes" element={<PreguntasFrecuentes />} />
+              <Route path="/politicas" element={<Politicas />} />
+              <Route path="/upload" element={<CloudinaryUpload />} />
+              <Route path="/ProductosCat" element={<ProductosCat />} />
+              <Route path="/producto/:id" element={<DetalleProducto />} />
+              <Route path="/editar-productos" element={<EditProductos />} />
+              <Route path="/historia-antecedentes" element={<HistoriaAntecedentes />} />
+              <Route path="/editar-producto/:id" element={<EditarProductos />} />
+              <Route path="/admin-usuarios" element={<AdmUsuarios />} />
+              <Route path="/admin/quienes-somos" element={<AdmQuienesSomos />} />
+              <Route path="/editar-quienes-somos/:section/:id" element={<EditarQuienesSomos />} />
+              <Route path="/admin-politicas" element={<AdminPoliticas />} />
+              <Route path="/ubicacion" element={<Ubicacion />} />
+              <Route path="/recuperar-contraseña" element={<RecuperarContraseña />} />
+              <Route path="/perfil" element={<Perfil />} />
+              <Route path="/EditarPerfil" element={<EditarPerfil />} />
+              <Route path="/control" element={<IoTManager />} />
+              <Route path="/control-iot" element={<ControlIoT />} />
+              <Route path="/agg-productos" element={<AggProductos />} />
+              <Route path="/vincular-iot" element={<VincularIoT />} />
+              <Route path="/iot-dashboard" element={<IoTDashboard />} />
+              <Route path="/admin-contactanos" element={<AdminContactanos />} />
+              <Route path="/admin-faqs" element={<AdminFaq />} />
+            </Routes>
+          </div>
+          <Footer />
+        </Router>
+      </div>
     </UserProvider>
   );
 };

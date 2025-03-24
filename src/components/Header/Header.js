@@ -116,6 +116,12 @@ const Header = () => {
                                     <Dropdown.Item as={Link} to="/admin-politicas">
                                         Administrar Políticas
                                     </Dropdown.Item>
+                                    <Dropdown.Item as={Link} to="/admin-contactanos">
+                                        Administrar Contactanos
+                                    </Dropdown.Item>
+                                    <Dropdown.Item as={Link} to="/admin-faqs">
+                                        Administrar FAQ
+                                    </Dropdown.Item>
                                 </Dropdown.Menu>
                             </Dropdown>
                         )}

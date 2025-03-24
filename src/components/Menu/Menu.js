@@ -19,13 +19,6 @@ const Menu = ({ isOpen, onClose }) => {
                     </ListGroup.Item>
                     
 
-                    <ListGroup.Item className="bg-warning border-0">
-                        <Nav.Link as={Link} to="/productos" className="d-flex align-items-center gap-3 text-dark fw-bold fs-5">
-                            <FaShoppingCart /> Productos
-                        </Nav.Link>
-                    </ListGroup.Item>
-
-                    
                 </ListGroup>
             </Offcanvas.Body>
 
