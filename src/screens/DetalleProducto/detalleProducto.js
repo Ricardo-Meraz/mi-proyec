@@ -36,7 +36,7 @@ const DetalleProducto = () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/dispositivos/estado?email=${user.email}`);
       if (response.data) {
-        navigate("/control-iot");
+        navigate("/iot-dashboard");
       }
     } catch (error) {
       if (error.response && error.response.status === 404) {

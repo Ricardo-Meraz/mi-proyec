@@ -26,10 +26,9 @@ import RecuperarContraseña from "./screens/RecuperarContraseña/RecuperarContra
 import Perfil from "./screens/Perfil/Perfil";
 import EditarPerfil from "./screens/Perfil/EditarPerfil";
 import IoTManager from "./screens/DispositivoIoT/IoTManager";
-import ControlIoT from "./screens/DispositivoIoT/ControlIoT";
 import AggProductos from "./screens/AdminProductos/AggProductos";
 import VincularIoT from "./screens/DispositivoIoT/VincularIoT";
-import IoTDashboard from "./screens/IotDashboard/IoTDashboard";
+import IoTDashboard from "./screens/DispositivoIoT/IoTDashboard";
 import AdminContactanos from "./screens/AdminContactanos/AdminContactanos";
 import AdminFaq from "./screens/AdminFaqs/AdminFaq";
 
@@ -63,7 +62,6 @@ const App = () => {
               <Route path="/perfil" element={<Perfil />} />
               <Route path="/EditarPerfil" element={<EditarPerfil />} />
               <Route path="/control" element={<IoTManager />} />
-              <Route path="/control-iot" element={<ControlIoT />} />
               <Route path="/agg-productos" element={<AggProductos />} />
               <Route path="/vincular-iot" element={<VincularIoT />} />
               <Route path="/iot-dashboard" element={<IoTDashboard />} />

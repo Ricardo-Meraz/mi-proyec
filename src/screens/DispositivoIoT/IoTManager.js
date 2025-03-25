@@ -1,81 +1,39 @@
-import React, { useEffect, useState, useContext } from 'react';
+// IoTManager.jsx
+import React, { useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { UserContext } from '../UserContext/UserContext';
 
 const API_URL = 'https://servidor-bbkq.vercel.app/dispositivos/estado';
 
-const ControlIoT = () => {
+const IoTManager = () => {
   const { user } = useContext(UserContext);
-  const [dispositivo, setDispositivo] = useState(null);
-  const [mensaje, setMensaje] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) return;
     
     axios.get(`${API_URL}?email=${user.email}`)
       .then(response => {
-        setDispositivo(response.data);
+        if (response.data) {
+          // Si el dispositivo está vinculado, redirige al dashboard.
+          navigate('/iot-dashboard');
+        } else {
+          // Si no hay dispositivo vinculado, redirige a vincular.
+          navigate('/vincular-iot');
+        }
       })
       .catch(error => {
-        setMensaje('Error al cargar datos del dispositivo');
-        console.error(error);
+        // Si el error es 404, se asume que no hay dispositivo vinculado.
+        if (error.response && error.response.status === 404) {
+          navigate('/vincular-iot');
+        } else {
+          console.error('Error al cargar datos del dispositivo:', error);
+        }
       });
-  }, [user]);
+  }, [user, navigate]);
 
-  const enviarComando = (comando) => {
-    if (!dispositivo) return;
-    
-    axios.post('https://servidor-bbkq.vercel.app/dispositivos/comando', {
-      email: user.email,
-      comando
-    })
-    .then(() => {
-      setMensaje(`Comando enviado: ${comando}`);
-    })
-    .catch(error => {
-      setMensaje('Error al enviar el comando');
-      console.error(error);
-    });
-  };
-
-  if (!dispositivo) {
-    return <p>Cargando datos del dispositivo...</p>;
-  }
-
-  return (
-    <div className="container">
-      <h2>Control del Dispositivo IoT</h2>
-      <p>{mensaje}</p>
-      <div>
-        <h3>Modo de Operación</h3>
-        <p>Estado: {dispositivo.automatico ? 'Automático' : 'Manual'}</p>
-        <button onClick={() => enviarComando(dispositivo.automatico ? 'modo_manual' : 'modo_auto')}>
-          Cambiar Modo
-        </button>
-      </div>
-      <div>
-        <h3>Ventilador</h3>
-        <p>Estado: {dispositivo.ventilador ? 'Encendido' : 'Apagado'}</p>
-        <button onClick={() => enviarComando(dispositivo.ventilador ? 'ventilador_off' : 'ventilador_on')}>
-          Cambiar
-        </button>
-      </div>
-      <div>
-        <h3>Bomba</h3>
-        <p>Estado: {dispositivo.bomba ? 'Encendida' : 'Apagada'}</p>
-        <button onClick={() => enviarComando(dispositivo.bomba ? 'bomba_off' : 'bomba_on')}>
-          Cambiar
-        </button>
-      </div>
-      <div>
-        <h3>Foco</h3>
-        <p>Estado: {dispositivo.foco ? 'Encendido' : 'Apagado'}</p>
-        <button onClick={() => enviarComando(dispositivo.foco ? 'foco_off' : 'foco_on')}>
-          Cambiar
-        </button>
-      </div>
-    </div>
-  );
+  return <p>Cargando...</p>;
 };
 
-export default ControlIoT;
+export default IoTManager;
