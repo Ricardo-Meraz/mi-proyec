@@ -1,60 +1,129 @@
-// IoTDashboard.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FaThermometerHalf, 
   FaTint, 
   FaLightbulb, 
+  FaRobot, 
+  FaHandPaper, 
   FaFan, 
-  FaWater,
-  FaRobot,
-  FaHandPaper
+  FaWater 
 } from 'react-icons/fa';
+import mqtt from 'mqtt';
 
-const IoTDashboard = () => {
-  /********************************************************
-   * DATOS ESTÁTICOS DE EJEMPLO (Sensores)
-   ********************************************************/
-  const sensorData = {
-    temperatura: 29.3, // °C
-    humedad: 40,       // %
-    luz: 23,           // %
+// Conexión MQTT
+const MQTT_BROKER = "wss://e1d8872f.ala.dedicated.aws.emqxcloud.com:8084/mqtt";
+const MQTT_OPTIONS = {
+  username: 'erisouo',
+  password: '12dejulio',
+  clientId: 'mqttx_c33a976b',
+};
+
+const TOPICS = {
+  temperatura: "proyec/temperatura",
+  humedad: "proyec/humedad",
+  luz: "proyec/luz",
+  modo: "proyec/modo",
+  ventilador: "proyec/ventilador",
+  bomba: "proyec/bomba",
+  foco: "proyec/foco"
+};
+
+const Dashboard = () => {
+  const [sensorData, setSensorData] = useState({
+    temperatura: 0,
+    humedad: 0,
+    luz: 0,
+  });
+  const [modo, setModo] = useState('Automático'); // 'Automático' o 'Manual'
+  const [ventilador, setVentilador] = useState(false);
+  const [bomba, setBomba] = useState(false);
+  const [foco, setFoco] = useState(false);
+  const [client, setClient] = useState(null);
+
+  useEffect(() => {
+    // Crear y guardar la conexión MQTT en el estado
+    const mqttClient = mqtt.connect(MQTT_BROKER, MQTT_OPTIONS);
+    setClient(mqttClient);
+
+    mqttClient.on('connect', () => {
+      console.log('Conectado a MQTT');
+      Object.values(TOPICS).forEach(topic => mqttClient.subscribe(topic));
+    });
+
+    mqttClient.on('message', (topic, message) => {
+      const messageString = message.toString();
+      switch (topic) {
+        case TOPICS.temperatura:
+          setSensorData(prev => ({ ...prev, temperatura: parseFloat(messageString) }));
+          break;
+        case TOPICS.humedad:
+          setSensorData(prev => ({ ...prev, humedad: parseFloat(messageString) }));
+          break;
+        case TOPICS.luz:
+          setSensorData(prev => ({ ...prev, luz: parseFloat(messageString) }));
+          break;
+        case TOPICS.modo:
+          setModo(messageString);
+          break;
+        case TOPICS.ventilador:
+          setVentilador(messageString === '1');
+          break;
+        case TOPICS.bomba:
+          setBomba(messageString === '1');
+          break;
+        case TOPICS.foco:
+          setFoco(messageString === '1');
+          break;
+        default:
+          break;
+      }
+    });
+
+    mqttClient.on('error', (err) => {
+      console.error('Error en MQTT:', err);
+    });
+
+    return () => {
+      mqttClient.end();
+    };
+  }, []);
+
+  // Función para publicar comandos usando la misma conexión
+  const publishCommand = (topic, value) => {
+    if (client) {
+      client.publish(topic, value);
+      console.log(`Enviado: ${topic} -> ${value}`);
+    }
   };
 
-  /********************************************************
-   * ESTADO PARA MODO Y ACTUADORES
-   * Se controlan mediante useState para simular el toggle
-   ********************************************************/
-  // Modo: 'Automático' o 'Manual'
-  const [modo, setModo] = useState('Automático');
-
-  // Actuadores: true => Encendido, false => Apagado
-  const [ventilador, setVentilador] = useState(true);
-  const [bomba, setBomba] = useState(true);
-  const [foco, setFoco] = useState(true);
-
-  /********************************************************
-   * FUNCIONES PARA TOGGLE
-   ********************************************************/
   const toggleModo = () => {
-    setModo(modo === 'Automático' ? 'Manual' : 'Automático');
+    const newModo = modo === 'Automático' ? 'Manual' : 'Automático';
+    setModo(newModo);
+    publishCommand(TOPICS.modo, newModo);
   };
 
   const toggleVentilador = () => {
-    setVentilador(!ventilador);
+    const newState = !ventilador;
+    setVentilador(newState);
+    publishCommand(TOPICS.ventilador, newState ? '1' : '0');
   };
 
   const toggleBomba = () => {
-    setBomba(!bomba);
+    const newState = !bomba;
+    setBomba(newState);
+    publishCommand(TOPICS.bomba, newState ? '1' : '0');
   };
 
   const toggleFoco = () => {
-    setFoco(!foco);
+    const newState = !foco;
+    setFoco(newState);
+    publishCommand(TOPICS.foco, newState ? '1' : '0');
   };
 
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Dashboard IoT</h1>
-      
+
       {/* Sección de Sensores */}
       <section style={styles.section}>
         <h2 style={styles.subtitle}>Sensores</h2>
@@ -245,4 +314,4 @@ const styles = {
   }
 };
 
-export default IoTDashboard;
+export default Dashboard;
