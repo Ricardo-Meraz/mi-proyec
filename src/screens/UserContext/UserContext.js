@@ -1,16 +1,28 @@
 // UserContext.js
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 
-export const UserContext = createContext();
+// Crea el contexto
+export const UserContext = createContext({
+  user: null,
+  setUser: () => {},
+});
 
+// Hook personalizado para usarlo fácilmente
+export const useUser = () => useContext(UserContext);
+
+// Provider del contexto
 export const UserProvider = ({ children }) => {
-  // Inicializa el usuario a partir del localStorage (si existe)
   const [user, setUser] = useState(() => {
-    const userData = localStorage.getItem('user');
-    return userData ? JSON.parse(userData) : null;
+    try {
+      const userData = localStorage.getItem('user');
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      console.error("Error cargando usuario desde localStorage", error);
+      return null;
+    }
   });
 
-  // Cada vez que el usuario cambie, actualiza el localStorage
+  // Guarda o elimina el usuario del localStorage
   useEffect(() => {
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
